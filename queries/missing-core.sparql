@@ -1,0 +1,10 @@
+select ?s2 {
+  ?s1 a wn30:CoreConcept .
+  ?s1 wn30:synsetId ?id .
+  ?s1 a ?type .
+  ?s2 wn30:synsetId ?id .
+  ?s2 a ?type .
+  filter( ?type != wn30:CoreConcept )
+  filter( ?s1 != ?s2 ) 
+  filter( not exists { ?s2 wn30:containsWordSense ?ws } )
+}

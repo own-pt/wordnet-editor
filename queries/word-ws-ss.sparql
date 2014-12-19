@@ -1,0 +1,6 @@
+select ?w ?ws ?ss 
+{
+  ?w  wn30:lexicalForm ?lf .
+  ?ws wn30:word ?w .
+  ?ss wn30:containsWordSense ?ws .
+}

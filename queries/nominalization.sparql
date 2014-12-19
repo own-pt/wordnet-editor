@@ -1,0 +1,9 @@
+prefix nomlex: <http://arademaker.github.com/nomlex/schema/>
+prefix wn30: <http://arademaker.github.com/wn30/schema/> 
+
+select ?nom {
+  ?nom nomlex:verb ?w1 .
+  ?nom nomlex:noun ?w2 .
+  ?w1 wn30:lexicalForm ?lv .
+  ?w2 wn30:lexicalForm ?ln .
+}

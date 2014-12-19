@@ -1,0 +1,9 @@
+PREFIX wn30: <http://arademaker.github.com/wn30/schema/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+select distinct ?ss {
+ ?ss a ?type .
+ bind(str(?ss) as ?add)
+ ?type rdfs:subClassOf wn30:Synset .
+ filter( regex(?add,"/wn30/") )
+}
