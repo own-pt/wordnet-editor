@@ -22,21 +22,31 @@
 (in-package :wordnet)
 
 (defun merge-nodes (old new)
-  "Transfer all in and out edges from OLD to NEW, except owl:sameAs edges."
-  (let ((new-triples nil))
-    (progn 
-      (mapcar #'(lambda (tr)
-		  (if (not (get-triple :s new :p (predicate tr) :o (object tr)))
-		      (push (list new (predicate tr) (object tr)) new-triples)))
-	      (get-triples-list :s old :limit nil))
-      (mapcar #'(lambda (tr)
-		  (if (not (get-triple :s (subject tr) :p (predicate tr) :o new))
-		      (push (list (subject tr) (predicate tr) new) new-triples)))
-	      (get-triples-list :o old :limit nil))
-      (dolist (a (remove-if (lambda (a) (part= (nth 1 a) !owl:sameAs)) new-triples))
-	(add-triple (nth 0 a) (nth 1 a) (nth 2 a)))
-      (delete-triples :s old)
-      (delete-triples :o old))))
+  "Transfer all in and out edges from OLD to NEW."
+  (unless (part= old new)
+    (mapc #'(lambda (tr)
+	      (if (not (get-triple :s new :p (predicate tr) :o (object tr)))
+		  (add-triple new (predicate tr) (object tr))))
+	  (get-triples-list :s old :limit nil))
+    (mapc #'(lambda (tr)
+	      (if (not (get-triple :s (subject tr) :p (predicate tr) :o new))
+		  (add-triple (subject tr) (predicate tr) new)))
+	  (get-triples-list :o old :limit nil))
+    (delete-triples :s old)
+    (delete-triples :o old)))
+
+
+(defun merge-group (group)
+  (if (and (listp group) 
+	   (> (length group) 1))
+      (let* ((non-blank (remove-if #'blank-node-p group)) 
+	     (master (if non-blank
+			 (car (sort non-blank #'< 
+				    :key #'(lambda (i) (length (part->string i)))))
+			 (car group)))
+	     (rest (remove-if #'(lambda (x) (part= x master)) group)))
+	(dolist (r rest) 
+	  (merge-nodes r master)))))
 
 
 (defun group-nodes (key value &optional (counter 0))
@@ -50,33 +60,12 @@
 	      (merge-nodes (car other) (car master))))))))
 
 
-(defun deduplicate-words-1 ()
-  (let* ((a-query (query-string "duplicated-words.sparql"))
-	 (pairs (sparql:run-sparql a-query :results-format :lists)))
-    (dolist (w pairs)
-      ; pairs is a list of lists 
-      (format *debug-io* "Merging ~a...~%" w)
-      (let* ((words (mapcar #'subject (get-triples-list :p !wn30:lexicalForm :o (car w))))
-	     (master (if (< 0 (length (remove-if #'blank-node-p words)))
-			 (car (remove-if #'blank-node-p words))
-			 (car words)))
-	     (rest (remove-if #'(lambda (x) (part= x master)) words)))
-	(dolist (other rest)
-	  (merge-nodes other master))))))
-
-
 (defun deduplicate-words ()
-  (let ((wt (make-hash-table :test #'equal))
-	(words (select0-distinct (?w ?l)
-		 (q- ?w !wn30:lexicalForm ?l)))
-	(counter 0))
+  (let* ((a-query (query-string "duplicated-words.sparql"))
+	 (words (mapcar #'car (sparql:run-sparql a-query :results-format :lists))))
     (dolist (w words)
-      (let ((str (upi->value (cadr w))))
-	(if (gethash str wt)
-	    (push w (gethash str wt))
-	    (setf (gethash str wt) (list w)))))
-    (format *debug-io* "Finished hashtable~%")
-    (maphash (lambda (k v) (group-nodes k v (incf counter)))  wt)))
+      (format *debug-io* "Merging ~a...~%" w)
+      (merge-group (mapcar #'subject (get-triples-list :p !wn30:lexicalForm :o w))))))
 
 
 (defun deduplicate-senseindex ()
