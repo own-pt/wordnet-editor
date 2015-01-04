@@ -62,19 +62,21 @@
   (let* ((current 0) 
 	 (total 0)
 	 (block-tmp nil)
-	 (triples (get-triples :p !rdf:type :o !nomlex:Nominalization))) 
-    (dolist (p triples)
-      (let ((id (subject p)))
-	(format *debug-io* "Processing ~a [~a/~a ~a]~%" id current blocksize total)
-	(push (remove-duplicates (nomlex-to-alist id) :test #'equal) block-tmp)
-	(setf current (1+ current))
-	(if (> current blocksize)
-	    (progn
-	      (solr:solr-add* *solr* block-tmp :commit t)
-	      (setf total (+ total current)
-		    current 0
-		    block-tmp nil)))))
-    (solr:solr-add* *solr* block-tmp :commit t)))
+	 (query (get-triples :p !rdf:type :o !nomlex:Nominalization))) 
+    (do* ((a-triple (cursor-next-row query)
+		    (cursor-next-row query))
+	  (id (subject a-triple)))
+	 ((null a-triple)
+	  (solr:solr-add* *solr* block-tmp :commit t))
+      (format *debug-io* "Processing ~a [~a/~a ~a]~%" id current blocksize total)
+      (push (remove-duplicates (nomlex-to-alist id) :test #'equal) block-tmp)
+      (setf current (1+ current))
+      (if (> current blocksize)
+	  (progn
+	    (solr:solr-add* *solr* block-tmp :commit t)
+	    (setf total (+ total current)
+		  current 0
+		  block-tmp nil))))))
 
 
 (defun load-synsets-solr (blocksize)
