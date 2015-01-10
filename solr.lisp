@@ -30,7 +30,7 @@
 	   (if words (push (cons (intern (adj-name "word") :keyword) words) res) res))
 	(cond
 	  ((part= (predicate a-triple) !owl:sameAs)
-	   (setf res (synset-to-alist addr :suffix "br" :data res :plan plan)))
+	   (setf res (synset-to-alist addr :suffix "pt" :data res :plan plan)))
 	  ((not (part= (predicate a-triple) !wn30:containsWordSense)) 
 	   (let ((key (intern (adj-name (tostr (predicate a-triple) ":" "_")) 
 			      :keyword))
@@ -68,7 +68,8 @@
 		    (cursor-next-row query)))
 	 ((null a-triple)
 	  (solr:solr-add* *solr* block-tmp :commit t))
-      (format *debug-io* "Processing ~a [~a/~a ~a]~%" (subject a-triple) current blocksize total)
+      (format *debug-io* "Processing ~a [~a/~a ~a]~%"
+	      (part->string (subject a-triple)) current blocksize total)
       (push (remove-duplicates (nomlex-to-alist (subject a-triple)) :test #'equal)
 	    block-tmp)
       (setf current (1+ current))
@@ -88,8 +89,10 @@
 	 (synsets (sparql:run-sparql (sparql:parse-sparql (query-string "all-synsets.sparql")) 
 				     :results-format :lists))) 
     (dolist (p synsets)
-      (let ((id (cl-ppcre:regex-replace "^wn30en:synset-" (part->string (car p) :format :concise) "")))
-	(format *debug-io* "Processing ~a [~a/~a ~a]~%" id current blocksize total)
+      (let ((id (cl-ppcre:regex-replace "^wn30en:synset-"
+					(part->string (car p) :format :concise) "")))
+	(format *debug-io* "Processing ~a [~a/~a ~a]~%"
+		id current blocksize total)
 	(push (remove-duplicates (synset-to-alist id :plan plan-words) :test #'equal) block-tmp)
 	(setf current (1+ current))
 	(if (> current blocksize)
