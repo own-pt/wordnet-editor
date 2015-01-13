@@ -12,6 +12,7 @@
 (register-namespace "wn30pt" "http://arademaker.github.com/wn30-br/instances/" :errorp nil)
 (register-namespace "nomlex" "http://arademaker.github.com/nomlex/schema/" :errorp nil)
 (register-namespace "nm-pt"  "http://arademaker.github.com/nomlex-br/instances/" :errorp nil)
+(register-namespace "skos"   "http://www.w3.org/2004/02/skos/core#" :errorp nil)
 (register-namespace "swn30"  "http://arademaker.github.com/swn30/schema/" :errorp nil)
 (register-namespace "source" "file:///home/ubuntu/wordnet-br/")
 

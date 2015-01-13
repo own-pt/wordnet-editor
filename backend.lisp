@@ -64,7 +64,7 @@
 	  (delete-triple (triple-id m)))))))
 
 
-(defun add-word (a-form &key (ns "wn30br"))
+(defun add-word (a-form &key (ns "wn30pt"))
   (let* ((lit (literal a-form :language "pt"))
 	 (words (select0-distinct ?w 
 		  (q- ?w !rdf:type !wn30:Word)
@@ -191,7 +191,7 @@
 	((equal (car clause) 'remove)
 	 (push `(remove-word ,(cadr clause) :synset res :debug t) cmds))
 	(t (error "I don't know this command ~a" (car clause)))))
-    `(let ((res (resource (format nil "synset-~a" (quote ,synset-id)) "wn30br")))
+    `(let ((res (resource (format nil "synset-~a" (quote ,synset-id)) "wn30pt")))
        ,@cmds)))
 
 

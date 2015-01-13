@@ -31,7 +31,7 @@
 	(cond
 	  ((part= (predicate a-triple) !owl:sameAs)
 	   (setf res (synset-to-alist addr :suffix "pt" :data res :plan plan)))
-	  ((not (part= (predicate a-triple) !wn30:containsWordSense)) 
+	  ((not (member (predicate a-triple) (list !skos:inScheme !wn30:containsWordSense) :test #'part=)) 
 	   (let ((key (intern (adj-name (tostr (predicate a-triple) ":" "_")) 
 			      :keyword))
 		 (val (tostr (object a-triple) "^wn30(en|br):synset-" "")))
