@@ -34,7 +34,7 @@
 	  ((not (member (predicate a-triple) (list !skos:inScheme !wn30:containsWordSense) :test #'part=)) 
 	   (let ((key (intern (adj-name (tostr (predicate a-triple) ":" "_")) 
 			      :keyword))
-		 (val (tostr (object a-triple) "^wn30(en|br):synset-" "")))
+		 (val (tostr (object a-triple) "^wn30(en|br)?:(synset-)?" "")))
 	     (push (cons key val) res))))))))
 
 
