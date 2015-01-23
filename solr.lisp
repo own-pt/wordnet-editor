@@ -14,7 +14,7 @@
 	       ((cl-ppcre:scan "^word" name) 
 		(intern (format nil "~a_~a" name suffix) :keyword)) 
 	       ((cl-ppcre:scan "gloss" name)
-		(intern (format nil "~a_~a" gloss suffix) :keyword))
+		(intern (format nil "gloss_~a" suffix) :keyword))
 	       (t (intern name :keyword)))))
     (let* ((synset (resource (concatenate 'string "synset-" addr) 
 			     (concatenate 'string "wn30" suffix)))
