@@ -27,8 +27,9 @@
 	   (a-triple (cursor-next-row query)
 		     (cursor-next-row query)))
 	  ((null a-triple)
-	   (append res (list (cons (adj-name "word") words)
-			     (cons (adj-name "word_count") (length words)))))
+	   (if words (push (cons (adj-name "word") words) res))
+	   (push (cons (adj-name "word_count") (length words)) res)
+	   res)
 	(cond
 	  ((part= (predicate a-triple) !owl:sameAs)
 	   (setf res (synset-to-alist addr :suffix "pt" :data res :plan plan)))
