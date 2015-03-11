@@ -32,14 +32,6 @@
 		(add-triple node !dc:provenance (literal prov :language "pt")))))))))
 
 
-(defun add-translation (lemma1 lemma2)
-  (let ((pair (select0 (?w1 ?w2)
-		(q- ?w1 !wn30:lexicalForm (?? (literal lemma1 :language "pt")))
-		(q- ?w2 !wn30:lexicalForm (?? (literal lemma2))))))
-    (if (car pair)
-	(add-triple (caar pair) !wn30:hasTranslation (cadar pair)))))
-
-
 (defun get-nomlex (part noun &key (prop !nomlex:verb))
   (caar (sparql:run-sparql (sparql:parse-sparql (query-string "nominalization.sparql"))
 			   :with-variables `((?lv . ,(literal part :language "pt"))
@@ -49,26 +41,5 @@
 			   :results-format :lists)))
 
 
-(defun add-nomlex (part noun &key (prop !nomlex:verb) (prov "AnCora"))
-  (let ((node (resource (format nil "nomlex-~a-~a" part noun) "nomlex-br"))
-	(a-part (add-word part))
-	(a-noun (add-word noun)))
-    (add-triple node prop a-part)
-    (add-triple node !nomlex:noun a-noun)
-    (add-triple node !rdf:type !nomlex:Nominalization)
-    (add-triple node !dc:provenance (literal prov))
-    node))
 
-
-(defun proc-line (line)
-  (let ((noun (car line))
-	(verb (cadr line))) 
-    (cond ((or (equal noun "NO VERB")
-	       (equal noun "")
-	       (equal verb "NO VERB")
-	       (equal verb "")) 
-	   (append line (list 'none)))
-	  ((get-nomlex verb noun)
-	   (append line (list 'already-included)))
-	  (t (append line (list (add-nomlex verb noun)))))))
 

@@ -76,6 +76,12 @@
 	  (add-triple res !wn30:lexicalForm lit)
 	  res))))
 
+(defun define-synset (synset prop values)
+  (assert (synset? synset))
+  (remove-triple synset prop)
+  (dolist (v values) 
+    (add-triple synset prop (literal v :language "pt"))))
+
 
 (defun add-synset-word (synset a-form)
   (assert (synset? synset))
@@ -89,13 +95,6 @@
 	(add-triple sense !wn30:word a-word)))))
 
 
-;; (defun get-synsets (a-string)
-;;   (mapcar (lambda (tr)
-;; 	    (select (?ss)
-;; 	      (q- ?ss !wn30:containsWordSense ?sense)
-;; 	      (q- ?sense !wn30:word (?? (subject tr)))))
-;; 	  (collect-cursor (freetext-get-triples a-string :index "lf") :transform #'copy-triple)))
-
 (defun get-synsets (a-string)
   (select0-distinct ?ss 
     (generating ?tr (let ((cursor (freetext-get-triples (?? a-string) :index "lf")))
@@ -106,7 +105,7 @@
     (q- ?ss !wn30:containsWordSense ?sense)))
 
 
-(defun describe-synset (synset)
+(defun describe-synset-0 (synset)
   (let* ((gloss (if (get-triples-list :s synset :p !wn30:gloss) 
 		    (object (car (get-triples-list :s synset :p !wn30:gloss)))))
 	 (rels (sparql:run-sparql (sparql:parse-sparql (query-string "synset-rels.sparql"))
@@ -148,7 +147,7 @@
     (reverse data)))
 
 
-(defun describe-synset-2 (synset)
+(defun describe-synset (synset)
   (let (data words rels)
     ;; if there are not too many matches for the synset, it may be faster to
     ;; make one get-triples call rather than 4 get-triple calls
@@ -181,17 +180,51 @@
     (list words rels data)))
 
 
+(defun add-nomlex (noun verb &key (prov nil))
+  (assert (and noun verb))
+  (let ((node (resource (format nil "nomlex-~a-~a" verb noun) "nomlex-br"))
+	(a-noun (add-word noun))
+	(a-verb (add-word verb)))
+    (add-triple node !nomlex:noun a-noun)
+    (add-triple node !nomlex:verb a-verb)
+    (add-triple node !rdf:type !nomlex:Nominalization)
+    (if prov
+	(add-triple node !dc:provenance (literal prov)))
+    node))
+
+
+(defun remove-nomlex (&key (noun nil) (verb nil))
+  (assert (or noun verb))
+  (let ((clauses nil))
+    (if verb (push '(q- ?node !nomle:verb (?? verb)) clauses))
+    (if noun (push '(q- ?node !nomle:noun (?? noun)) clauses))
+    (let ((node (eval (append '(select ?node) clauses))))
+      node)))
+
 
 (defmacro with-synset (synset-id &body body)
-  (let ((cmds nil))
+  (let ((cmds '((describe-synset res)))
+	(examples nil))
     (dolist (clause body cmds)
-      (cond 
+      (cond
+	((equal (car clause) 'example)
+	 (push (cadr clause) examples))
+	((equal (car clause) 'gloss)
+	 (push `(define-synset res !wn30:gloss ,(cadr clause)) cmds))
 	((equal (car clause) 'add)
 	 (push `(add-synset-word res ,(cadr clause)) cmds))
 	((equal (car clause) 'remove)
-	 (push `(remove-word ,(cadr clause) :synset res :debug t) cmds))
+	 (push `(remove-word ,(cadr clause) :synset res) cmds))
 	(t (error "I don't know this command ~a" (car clause)))))
+    (if examples
+	(push `(define-synset res !wn30:example ',examples) cmds))
     `(let ((res (resource (format nil "synset-~a" (quote ,synset-id)) "wn30pt")))
        ,@cmds)))
+
+
+(defmacro nomlex (cmd &body body)
+  `(define-nomlex (quote ,cmd)
+       :verb ,(cadar (remove-if-not (lambda (n) (equal 'verb (car n))) body))
+       :noun ,(cadar (remove-if-not (lambda (n) (equal 'noun (car n))) body))))
 
 

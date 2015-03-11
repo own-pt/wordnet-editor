@@ -103,3 +103,6 @@
 		    current 0
 		    block-tmp nil)))))
     (solr:solr-add* *solr* block-tmp :commit t)))
+
+
+
