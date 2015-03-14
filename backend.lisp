@@ -78,9 +78,11 @@
 
 (defun define-synset (synset prop values)
   (assert (synset? synset))
-  (remove-triple synset prop)
-  (dolist (v values) 
-    (add-triple synset prop (literal v :language "pt"))))
+  (delete-triples :s synset :p prop)
+  (if (listp values)
+      (dolist (v values) 
+	(add-triple synset prop (literal v :language "pt")))
+      (add-triple synset prop (literal values :language "pt"))))
 
 
 (defun add-synset-word (synset a-form)
@@ -119,32 +121,8 @@
 	 (words (select ?lf
 		  (q- (?? synset) !wn30:containsWordSense ?sense)
 		  (q- ?sense !wn30:word ?word)
-		  (q- ?word !wn30:lexicalForm ?lf)))
-	 )
+		  (q- ?word !wn30:lexicalForm ?lf))))
     (list gloss lexfl same words rels)))
-
-
-(defun describe-synset-1 (synset)
-  (let ((record (make-hash-table ))
-	(types (get-triples-list :s :p !rdfs:type :limit nil))
-	(id    (get-triple :s synset :p !wn30:synsetId))
-	(same  (get-triple :s synset :p !owl:sameAs))
-	(words (select ?lf 
-		 (q- (?? synset) !wn30:containsWordSense ?sense)
-		 (q- ?sense !wn30:word ?word)
-		 (q- ?word !wn30:lexicalForm ?lf)))
-	)
-    (loop for p in (list '(!wn30:gloss :gloss) 
-			 '(!wn30:lexicographerFile :lexfile))
-	  for a-triple = (get-triple :s synset :p (car p))
-	  do (if a-triple 
-		 (setf (gethash (cadr p) record) (part->string (object a-triple)))))
-    (rels (remove-if-not (lambda (atr) (member (predicate atr) *ptrs* :test #'part=))
-			     (get-triples-list :s synset :limit nil)))
-
-    (push words data)
-    (push rels data)
-    (reverse data)))
 
 
 (defun describe-synset (synset)
@@ -182,7 +160,7 @@
 
 (defun add-nomlex (noun verb &key (prov nil))
   (assert (and noun verb))
-  (let ((node (resource (format nil "nomlex-~a-~a" verb noun) "nomlex-br"))
+  (let ((node (resource (format nil "nomlex-~a-~a" verb noun) "nm-pt"))
 	(a-noun (add-word noun))
 	(a-verb (add-word verb)))
     (add-triple node !nomlex:noun a-noun)
@@ -195,15 +173,19 @@
 
 (defun remove-nomlex (&key (noun nil) (verb nil))
   (assert (or noun verb))
-  (let ((clauses nil))
-    (if verb (push '(q- ?node !nomle:verb (?? verb)) clauses))
-    (if noun (push '(q- ?node !nomle:noun (?? noun)) clauses))
-    (let ((node (eval (append '(select ?node) clauses))))
-      node)))
+  (let ((vars nil))
+    (if verb (push `(?verb . ,(literal verb :language "pt")) vars))
+    (if noun (push `(?noun . ,(literal noun :language "pt")) vars))
+    (let ((resp (run-sparql (parse-sparql (query-string "nominalization.sparql")
+					  (alexandria:alist-hash-table (collect-namespaces)))
+			    :with-variables vars
+			    :engine :sparql-1.1 :results-format :lists)))
+      (dolist (r resp)
+	(delete-triples :s (car r))))))
 
 
 (defmacro with-synset (synset-id &body body)
-  (let ((cmds '((describe-synset res)))
+  (let ((cmds nil)
 	(examples nil))
     (dolist (clause body cmds)
       (cond
@@ -223,8 +205,19 @@
 
 
 (defmacro nomlex (cmd &body body)
-  `(define-nomlex (quote ,cmd)
-       :verb ,(cadar (remove-if-not (lambda (n) (equal 'verb (car n))) body))
-       :noun ,(cadar (remove-if-not (lambda (n) (equal 'noun (car n))) body))))
+  (let (verb noun)
+    (dolist (b body)
+      (cond
+	((equal 'noun (car b))
+	 (setf noun (cadr b)))
+	((equal 'verb (car b))
+	 (setf verb (cadr b)))
+	(t (error "I don't know this clause"))))
+    (cond
+      ((equal 'add cmd)
+       `(add-nomlex ,noun ,verb))
+      ((equal 'remove cmd)
+       `(remove-nomlex :noun ,noun :verb ,verb))
+      (t (error "I don't know this command")))))
 
 
