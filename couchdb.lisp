@@ -42,7 +42,8 @@ Sample CouchDB chillax server creation:
 		    (cursor-next-row query)))
 	 ((null a-triple)
 	  (chillax:bulk-post-documents db block-tmp))
-      (format *debug-io* "Processing ~a [~a/~a ~a]~%" (part->string (subject a-triple)) current blocksize total)
+      (format *debug-io* "Processing ~a [~a/~a ~a]~%"
+	      (part->string (subject a-triple)) current blocksize total)
       (push (merge-duplicate-keys 
 	     (remove-duplicates 
 	      (nomlex-to-alist (subject a-triple))
