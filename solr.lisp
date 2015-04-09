@@ -12,7 +12,9 @@
 	   (adj-name (name)
 	     (cond 
 	       ((cl-ppcre:scan "^word" name) 
-		(intern (format nil "~a_~a" name suffix) :keyword)) 
+		(intern (format nil "~a_~a" name suffix) :keyword))
+	       ((cl-ppcre:scan "example" name)
+		(intern (format nil "example_~a" suffix) :keyword))
 	       ((cl-ppcre:scan "gloss" name)
 		(intern (format nil "gloss_~a" suffix) :keyword))
 	       (t (intern name :keyword)))))
