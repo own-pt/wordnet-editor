@@ -17,5 +17,6 @@
 	       (:file "solr"          :depends-on ("utils"))
 	       (:file "couchdb"       :depends-on ("solr"))
 	       (:file "deduplication" :depends-on ("utils"))
+	       (:file "suggestions"   :depends-on ("backend"))
 	       (:file "server"        :depends-on ("backend"))
 	       (:file "nomlex-rdf"    :depends-on ("backend"))))
