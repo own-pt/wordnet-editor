@@ -84,6 +84,13 @@
 	(add-triple synset prop (literal v :language "pt")))
       (add-triple synset prop (literal values :language "pt"))))
 
+;; TODO testar
+(defun add-synset-prop (synset prop values)
+  (assert (synset? synset))
+  (if (listp values)
+      (dolist (v values) 
+	(add-triple synset prop (literal v :language "pt")))
+      (add-triple synset prop (literal values :language "pt"))))
 
 (defun add-synset-word (synset a-form)
   (assert (synset? synset))
@@ -182,26 +189,6 @@
 			    :engine :sparql-1.1 :results-format :lists)))
       (dolist (r resp)
 	(delete-triples :s (car r))))))
-
-
-(defmacro with-synset (synset-id &body body)
-  (let ((cmds nil)
-	(examples nil))
-    (dolist (clause body cmds)
-      (cond
-	((equal (car clause) 'example)
-	 (push (cadr clause) examples))
-	((equal (car clause) 'gloss)
-	 (push `(define-synset res !wn30:gloss ,(cadr clause)) cmds))
-	((equal (car clause) 'add)
-	 (push `(add-synset-word res ,(cadr clause)) cmds))
-	((equal (car clause) 'remove)
-	 (push `(remove-word ,(cadr clause) :synset res) cmds))
-	(t (error "I don't know this command ~a" (car clause)))))
-    (if examples
-	(push `(define-synset res !wn30:example ',examples) cmds))
-    `(let ((res (resource (format nil "synset-~a" (quote ,synset-id)) "wn30pt")))
-       ,@cmds)))
 
 
 (defmacro nomlex (cmd &body body)
