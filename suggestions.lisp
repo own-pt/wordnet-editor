@@ -19,10 +19,18 @@
       (when (and (string-equal "committed" status)
 		 (string-equal "synset" doc-type))
 	(cond ((string-equal "add-word-pt" action)
-	       (format t "add [~a] to [~a]~%" params res)
+	       (format t "add-w [~a] to [~a]~%" params res)
 	       (add-synset-word res params))
 	      ((string-equal "remove-word-pt" action)
-	       (format t "rm  [~a] to [~a]~%" params res)
-	       (remove-word params :synset res)))))))
+	       (format t "rm-w  [~a] to [~a]~%" params res)
+	       (remove-word params :synset res))
+	      ((string-equal "add-gloss-pt" action)
+	       (format t "add-g  [~a] to [~a]~%" params res)
+	       (add-synset-prop res !wn30:gloss params))
+	      ((string-equal "add-example-pt" action)
+	       (format t "add-e  [~a] to [~a]~%" params res)
+	       (add-synset-prop res !wn30:example params)))))))
 	    
+;; !wn30:gloss
+;; !wn30:example
 
