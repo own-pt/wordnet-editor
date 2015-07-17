@@ -33,13 +33,11 @@
 (defun synset? (synset)
   (get-triples-list :s synset :p !wn30:synsetId))
 
-
 (defun synset-has-word? (synset a-form)
   (select0-distinct ?ws
     (q- ?w  !wn30:lexicalForm (?? (literal a-form :language "pt")))
     (q- ?ws !wn30:word ?w)
     (q- (?? synset) !wn30:containsWordSense ?ws)))
-
 
 (defun remove-word (a-form &key (synset nil) (debug nil))
   (let ((vars `((?lf . ,(literal a-form :language "pt"))))
@@ -63,7 +61,6 @@
 	      (format *debug-io* "Del ~s~%" m))
 	  (delete-triple (triple-id m)))))))
 
-
 (defun add-word (a-form &key (ns "wn30pt"))
   (let* ((lit (literal a-form :language "pt"))
 	 (words (select0-distinct ?w 
@@ -84,7 +81,6 @@
 	(add-triple synset prop (literal v :language "pt")))
       (add-triple synset prop (literal values :language "pt"))))
 
-;; TODO testar
 (defun add-synset-prop (synset prop values)
   (assert (synset? synset))
   (if (listp values)
@@ -103,7 +99,6 @@
 	(add-triple sense !rdfs:label lit)
 	(add-triple sense !wn30:word a-word)))))
 
-
 (defun get-synsets (a-string)
   (select0-distinct ?ss 
     (generating ?tr (let ((cursor (freetext-get-triples (?? a-string) :index "lf")))
@@ -112,7 +107,6 @@
     ; (lisp ?obj (object ?tr))
     (q- ?sense !wn30:word ?sub)
     (q- ?ss !wn30:containsWordSense ?sense)))
-
 
 (defun describe-synset-0 (synset)
   (let* ((gloss (if (get-triples-list :s synset :p !wn30:gloss) 
@@ -130,7 +124,6 @@
 		  (q- ?sense !wn30:word ?word)
 		  (q- ?word !wn30:lexicalForm ?lf))))
     (list gloss lexfl same words rels)))
-
 
 (defun describe-synset (synset)
   (let (data words rels)
@@ -177,7 +170,6 @@
 	(add-triple node !dc:provenance (literal prov)))
     node))
 
-
 (defun remove-nomlex (&key (noun nil) (verb nil))
   (assert (or noun verb))
   (let ((vars nil))
@@ -189,7 +181,6 @@
 			    :engine :sparql-1.1 :results-format :lists)))
       (dolist (r resp)
 	(delete-triples :s (car r))))))
-
 
 (defmacro nomlex (cmd &body body)
   (let (verb noun)
@@ -207,4 +198,72 @@
        `(remove-nomlex :noun ,noun :verb ,verb))
       (t (error "I don't know this command")))))
 
+(defun make-wordsense-id (synset prefix n)
+  (labels ((synset-type (synset)
+	     (object (get-triple :s synset :p !rdf:type)))
+	   (synset-id (synset)
+	     (upi->value (object (get-triple :s synset :p !wn30:synsetId))))
+	   (type-suffix (type)
+	     (upi->value (object (get-triple :s type :p !wn30:suffixCode))))
+	   (encode-synset (s)
+	       (format nil "~a-~a"
+		       (synset-id synset)
+		       (type-suffix (synset-type synset)))))
+    (upi (resource 
+	  (format nil "~a-~a-~a" prefix (encode-synset synset) n)
+	  "wn30pt"))))
 
+(defun process-wordsense (synset blank prefix n)
+  (merge-nodes blank (make-wordsense-id synset prefix n)))
+
+(defun process-wordsenses (synset objects prefix n)
+  (when objects
+    (progn
+      (process-wordsense synset (car objects) prefix n)
+      (process-wordsenses synset (cdr objects) prefix (1+ n)))))
+
+;;; A quick word on these two functions:
+
+;;; Initially, OpenWordnet-PT was in an inconsitent state where some synsets
+;;; had "containsWordSense" relations with blank nodes AND regular nodes.
+;;; To avoid any name conflict, we simply opted to rename ALL objects (regardless of
+;;; whether they are blank or not) to "tmp-wordsense-<synset-id>-<number>" and then
+;;; rename ALL these new nodes to its final value "wordsense-<synset-id>-<number>".
+;;;
+;;; So, given an inconsistent OpenWordnet-PT, the following methods need to be called
+;;; in the correct order:
+;;;
+;;; (process-all-blank-wordsenses)
+;;; 
+;;; at this point all synsets will have "containsWordSense" pointing
+;;; to "tmp-wordsense-xxx-yyy" nodes
+;;;
+;;; (rename-wordsenses)
+;;;
+;;; at this point all "tmp-wordsenses-*" will be renamed to "wordsenses-*".
+;;;
+;;; Since there was no information about the order of words in the
+;;; first place, it doesn't matter for these methods the final order
+;;; of the words.
+ 
+(defun process-all-blank-wordsenses ()
+  (flet ((get-wordsenses (synset)
+	   (mapcar #'object (get-triples-list :s synset :p !wn30:containsWordSense))))
+    (let ((table (mapcar #'car 
+			 (run-sparql (parse-sparql (query-string "wordsenses-with-blank-nodes.sparql")
+						   (alexandria:alist-hash-table (collect-namespaces)))
+				     :engine :sparql-1.1 :results-format :lists))))
+      (dolist (s table)
+	(process-wordsenses s (get-wordsenses s) "tmp-wordsense" 1)))))
+
+(defun rename-wordsenses ()
+  (flet ((get-wordsenses (synset)
+	   (mapcar #'object (get-triples-list :s synset :p !wn30:containsWordSense))))
+    (let ((table (mapcar #'car 
+			 (run-sparql (parse-sparql (query-string "wordsenses-without-blank-nodes.sparql")
+						   (alexandria:alist-hash-table (collect-namespaces)))
+				     :engine :sparql-1.1 :results-format :lists))))
+      (dolist (s table)
+	(process-wordsenses s (get-wordsenses s) "wordsense" 1)))))
+	
+    

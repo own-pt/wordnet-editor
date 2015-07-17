@@ -30,7 +30,4 @@
 	      ((string-equal "add-example-pt" action)
 	       (format t "add-e  [~a] to [~a]~%" params res)
 	       (add-synset-prop res !wn30:example params)))))))
-	    
-;; !wn30:gloss
-;; !wn30:example
 
