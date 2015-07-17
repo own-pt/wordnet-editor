@@ -240,7 +240,7 @@
 ;;;
 ;;; (rename-wordsenses)
 ;;;
-;;; at this point all "tmp-wordsenses-*" will be renamed to "wordsenses-*".
+;;; at this point all "tmp-wordsense-*" will be renamed to "wordsense-*".
 ;;;
 ;;; Since there was no information about the order of words in the
 ;;; first place, it doesn't matter for these methods the final order
@@ -265,5 +265,3 @@
 				     :engine :sparql-1.1 :results-format :lists))))
       (dolist (s table)
 	(process-wordsenses s (get-wordsenses s) "wordsense" 1)))))
-	
-    
