@@ -246,22 +246,21 @@
 ;;; first place, it doesn't matter for these methods the final order
 ;;; of the words.
  
+(defun get-wordsenses (synset)
+  (mapcar #'object (get-triples-list :s synset :p !wn30:containsWordSense)))
+
 (defun process-all-blank-wordsenses ()
-  (flet ((get-wordsenses (synset)
-	   (mapcar #'object (get-triples-list :s synset :p !wn30:containsWordSense))))
-    (let ((table (mapcar #'car 
-			 (run-sparql (parse-sparql (query-string "wordsenses-with-blank-nodes.sparql")
-						   (alexandria:alist-hash-table (collect-namespaces)))
-				     :engine :sparql-1.1 :results-format :lists))))
-      (dolist (s table)
-	(process-wordsenses s (get-wordsenses s) "tmp-wordsense" 1)))))
+  (let ((table (mapcar #'car 
+		       (run-sparql (parse-sparql (query-string "wordsenses-with-blank-nodes.sparql")
+						 (alexandria:alist-hash-table (collect-namespaces)))
+				   :engine :sparql-1.1 :results-format :lists))))
+    (dolist (s table)
+      (process-wordsenses s (get-wordsenses s) "tmp-wordsense" 1))))
 
 (defun rename-wordsenses ()
-  (flet ((get-wordsenses (synset)
-	   (mapcar #'object (get-triples-list :s synset :p !wn30:containsWordSense))))
-    (let ((table (mapcar #'car 
-			 (run-sparql (parse-sparql (query-string "wordsenses-without-blank-nodes.sparql")
-						   (alexandria:alist-hash-table (collect-namespaces)))
-				     :engine :sparql-1.1 :results-format :lists))))
-      (dolist (s table)
-	(process-wordsenses s (get-wordsenses s) "wordsense" 1)))))
+  (let ((table (mapcar #'car 
+		       (run-sparql (parse-sparql (query-string "wordsenses-without-blank-nodes.sparql")
+						 (alexandria:alist-hash-table (collect-namespaces)))
+				   :engine :sparql-1.1 :results-format :lists))))
+    (dolist (s table)
+      (process-wordsenses s (get-wordsenses s) "wordsense" 1))))
