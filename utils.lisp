@@ -14,3 +14,7 @@
   (file-string (make-pathname :directory *queries-dir* 
 			      :name query-name)))
 
+(defun run-query-as-list (query-name)
+  (run-sparql (parse-sparql (query-string query-name)
+			    (alexandria:alist-hash-table (collect-namespaces)))
+	      :engine :sparql-1.1 :results-format :lists))

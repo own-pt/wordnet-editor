@@ -245,22 +245,28 @@
 ;;; Since there was no information about the order of words in the
 ;;; first place, it doesn't matter for these methods the final order
 ;;; of the words.
+
  
 (defun get-wordsenses (synset)
   (mapcar #'object (get-triples-list :s synset :p !wn30:containsWordSense)))
 
 (defun process-all-blank-wordsenses ()
-  (let ((table (mapcar #'car 
-		       (run-sparql (parse-sparql (query-string "wordsenses-with-blank-nodes.sparql")
-						 (alexandria:alist-hash-table (collect-namespaces)))
-				   :engine :sparql-1.1 :results-format :lists))))
+  (let ((table (mapcar #'car (run-query-as-list "wordsenses-with-blank-nodes.sparql"))))
     (dolist (s table)
       (process-wordsenses s (get-wordsenses s) "tmp-wordsense" 1))))
 
 (defun rename-wordsenses ()
-  (let ((table (mapcar #'car 
-		       (run-sparql (parse-sparql (query-string "wordsenses-without-blank-nodes.sparql")
-						 (alexandria:alist-hash-table (collect-namespaces)))
-				   :engine :sparql-1.1 :results-format :lists))))
+  (let ((table (mapcar #'car (run-query-as-list "wordsenses-without-blank-nodes.sparql"))))
     (dolist (s table)
       (process-wordsenses s (get-wordsenses s) "wordsense" 1))))
+
+
+;; working with words
+
+(defun get-words (synset &key (ns "wn30pt")) 
+  (let ((result (run-query-as-list "words-blank.sparql")))
+    (dolist (w result)
+      (let ((uri (resource (format nil "word-~a" (replace-regexp (cadr result) "[ ]+" "_")) ns)))
+	(merge-nodes (car result) uri)))))
+
+
