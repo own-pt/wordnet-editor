@@ -224,7 +224,7 @@
 
 ;;; A quick word on these two functions:
 
-;;; Initially, OpenWordnet-PT was in an inconsitent state where some synsets
+;;; Initially, OpenWordnet-PT was in an inconsistent state where some synsets
 ;;; had "containsWordSense" relations with blank nodes AND regular nodes.
 ;;; To avoid any name conflict, we simply opted to rename ALL objects (regardless of
 ;;; whether they are blank or not) to "tmp-wordsense-<synset-id>-<number>" and then
@@ -260,13 +260,9 @@
     (dolist (s table)
       (process-wordsenses s (get-wordsenses s) "wordsense" 1))))
 
-
-;; working with words
-
-(defun get-words (synset &key (ns "wn30pt")) 
+(defun process-all-blank-words (&key (ns "wn30pt"))
   (let ((result (run-query-as-list "words-blank.sparql")))
     (dolist (w result)
-      (let ((uri (resource (format nil "word-~a" (replace-regexp (cadr result) "[ ]+" "_")) ns)))
-	(merge-nodes (car result) uri)))))
-
-
+      (let ((uri (resource (format nil "word-~a"
+                                   (replace-regexp (upi->value (cadr w)) "[ ]+" "_")) ns)))
+        (merge-nodes (car w) uri)))))
