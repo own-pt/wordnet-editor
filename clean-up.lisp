@@ -1,6 +1,10 @@
 ;;; these are various functions that were used to clean up the own-pt triplestore
 ;;; that aren't needed anymore; they are retained here if we need to do similar cleanups
 ;;; in the future.
+(in-package :wordnet)
+
+(defun clean-up-word (str)
+  (cl-ppcre:regex-replace-all "[^\\w]" str "_"))
 
 (defun make-wordsense-id (synset prefix n)
   (labels ((synset-type (synset)
@@ -67,6 +71,7 @@
 (defun process-all-blank-words (&key (ns "wn30pt"))
   (let ((result (run-query-as-list "words-blank.sparql")))
     (dolist (w result)
-      (let ((uri (resource (format nil "word-~a"
-                                   (replace-regexp (upi->value (cadr w)) "[ ]+" "_")) ns)))
+      (let ((uri (resource 
+		  (format nil "word-~a"
+			  (clean-up-word (upi->value (cadr w))) ns))))
         (merge-nodes (car w) uri)))))
