@@ -73,5 +73,19 @@
     (dolist (w result)
       (let ((uri (resource 
 		  (format nil "word-~a"
-			  (clean-up-word (upi->value (cadr w))) ns))))
+			  (clean-up-word (upi->value (cadr w)))) ns)))
         (merge-nodes (car w) uri)))))
+
+;;this hack was necessary because we had invalid URIs in the database
+;;specifically a couple of words under http://arademaker.github.com/wn30-br/instances/
+;;had spaces in them.  since none of the libraries that I tried support URIs with
+;;spaces in them I had to resort to using SUBSEQ.
+(defun process-all-words-with-invalid-chars (&key (ns "wn30pt"))
+  (dolist (w (get-triples-list :p !rdf:type :o !wn30:Word))
+    (when (not (blank-node-p (subject w)))
+      (let ((word (upi->value (subject w))))
+	(when (find #\space word)
+	  (let ((uri (resource (format nil "word-~a"
+				       (clean-up-word (subseq word 52))) ns)))
+	    (merge-nodes (subject w) uri)))))))
+
