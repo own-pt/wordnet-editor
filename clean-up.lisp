@@ -96,4 +96,3 @@
 	  (let ((uri (resource (format nil "word-~a"
 				       (clean-up-word (subseq word 52))) ns)))
 	    (merge-nodes (subject w) uri)))))))
-
