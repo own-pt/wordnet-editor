@@ -68,8 +68,16 @@
     (dolist (s table)
       (process-wordsenses s (get-wordsenses s) "wordsense" 1))))
 
-(defun process-all-blank-words (&key (ns "wn30pt"))
-  (let ((result (run-query-as-list "words-blank.sparql")))
+(defun process-all-blank-pt-words (&key (ns "wn30pt"))
+  (let ((result (run-query-as-list "pt-blank-words.sparql")))
+    (dolist (w result)
+      (let ((uri (resource 
+		  (format nil "word-~a"
+			  (clean-up-word (upi->value (cadr w)))) ns)))
+        (merge-nodes (car w) uri)))))
+
+(defun process-all-blank-en-words (&key (ns "wn30en"))
+  (let ((result (run-query-as-list "en-blank-words.sparql")))
     (dolist (w result)
       (let ((uri (resource 
 		  (format nil "word-~a"
