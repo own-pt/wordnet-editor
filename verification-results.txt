@@ -22,4 +22,9 @@ Needs to be done:
 
 4. Re-export the files own-pt.nt.gz and wordnet-en.nt.gz
 
+5. Review all numerical properties and put proper restrictions in the
+   wn30.turtle.  Update literals as needed.
+
+6. Review the language tag of all EN and PT words.
+
 Done:
