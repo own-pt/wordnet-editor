@@ -1,4 +1,4 @@
-Needed to be done:
+Needs to be done:
 
 1. New wn30.turtle was provided: need to replace the one in the
    triple-store (context <file://wnlite.nt>
