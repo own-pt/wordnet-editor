@@ -96,3 +96,28 @@
 	  (let ((uri (resource (format nil "word-~a"
 				       (clean-up-word (subseq word 52))) ns)))
 	    (merge-nodes (subject w) uri)))))))
+
+;;;
+;;; fixes the predicates synsetId and tagCount.  They need to make
+;;; sure that the literals are properly typed as
+;;; xsd:nonnegativeInteger
+;;;
+;;; https://w3id.org/own-pt/wn30/schema/tagCount
+;;; https://w3id.org/own-pt/wn30/schema/synsetId
+;;;
+;;; xs:nonNegativeInteger
+
+(defun fix-incorrectly-typed-literals1 (predicate)
+  (dolist (tr (get-triples-list :p predicate))
+    (let* ((s (subject tr))
+           (p (predicate tr))
+           (o (object tr))
+           (g (graph tr))
+           (tl (literal (upi->value o) :datatype !xs:nonNegativeInteger)))
+      (delete-triple (triple-id tr))
+      (add-triple s p tl :g g))))
+
+(defun fix-incorrectly-typed-literals ()
+  (fix-incorrectly-typed-literals1 !wn30:tagCount)
+  (fix-incorrectly-typed-literals1 !wn30:synsetId))
+

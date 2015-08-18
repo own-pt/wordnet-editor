@@ -1,0 +1,25 @@
+Needed to be done:
+
+1. New wn30.turtle was provided: need to replace the one in the
+   triple-store (context <file://wnlite.nt>
+
+   # First, execute the following SPARQL:
+
+   # drop graph <file://wnlite.nt>
+
+   Next, import wn30.turtle from the openWordnet-PT project and make
+   sure to use the same context as above (file://wnlite.nt).
+
+2. We need to clean the literals of the synsetId and tagCount
+   properties (they need to be xsd:nonnegativeInteger).
+
+   # Run: (FIX-INCORRECTLY-TYPED-LITERALS) on file CLEAN-UP.LISP
+
+3. We need to clean all IRIs that have illegal characters in them.  We
+   should make them only in the standard ASCII values: a-zA-Z0-9.
+
+   # Still need to implement that one.
+
+4. Re-export the files own-pt.nt.gz and wordnet-en.nt.gz
+
+Done:
