@@ -48,8 +48,6 @@
     (when (blank-node-p (subject tr))
       (move-to-graph (subject tr) !source:own-pt.nt))))
 
-;;;;;;;;;;;;;;
-
 (defun clean-up-word (str)
   (cl-ppcre:regex-replace-all "[^\\w]" str "_"))
 
@@ -81,54 +79,33 @@
 	  "wn30pt"))))
 
 (defun process-wordsense (synset blank prefix n)
-  (merge-nodes blank (make-wordsense-id synset prefix n)))
+  (let ((ws (make-wordsense-id synset prefix n)))
+    ;; if the newly generated wordsense is alread present on the
+    ;; data-store, move to the next one
+    (if (or (get-triples-list :s ws) (get-triples-list :o ws))
+        (process-wordsense synset blank prefix (1+ n))
+        (merge-nodes blank ws))))
 
-(defun process-wordsenses (synset objects prefix n)
+(defun process-wordsenses (synset objects prefix)
   (when objects
     (progn
-      (process-wordsense synset (car objects) prefix n)
-      (process-wordsenses synset (cdr objects) prefix (1+ n)))))
+      (process-wordsense synset (car objects) prefix 1)
+      (process-wordsenses synset (cdr objects) prefix))))
 
-;;; A quick word on these two functions:
-
-;;; Initially, OpenWordnet-PT was in an inconsistent state where some synsets
-;;; had "containsWordSense" relations with blank nodes AND regular nodes.
-;;; To avoid any name conflict, we simply opted to rename ALL objects (regardless of
-;;; whether they are blank or not) to "tmp-wordsense-<synset-id>-<number>" and then
-;;; rename ALL these new nodes to its final value "wordsense-<synset-id>-<number>".
-;;;
-;;; So, given an inconsistent OpenWordnet-PT, the following methods need to be called
-;;; in the correct order:
-;;;
-;;; (process-all-blank-wordsenses)
-;;; 
-;;; at this point all synsets will have "containsWordSense" pointing
-;;; to "tmp-wordsense-xxx-yyy" nodes
-;;;
-;;; (rename-wordsenses)
-;;;
-;;; at this point all "tmp-wordsense-*" will be renamed to "wordsense-*".
-;;;
-;;; Since there was no information about the order of words in the
-;;; first place, it doesn't matter for these methods the final order
-;;; of the words.
-
- 
 (defun get-wordsenses (synset)
   (mapcar #'object (get-triples-list :s synset :p !wn30:containsWordSense)))
 
-;;; warning: these are corrupting the triple-store (begin)
-;;; refrain from using until the bug is fixed.
 (defun process-all-blank-wordsenses ()
   (let ((table (mapcar #'car (run-query-as-list "wordsenses-with-blank-nodes.sparql"))))
     (dolist (s table)
-      (process-wordsenses s (get-wordsenses s) "tmp-wordsense" 1))))
+      (let* ((wordsenses (get-wordsenses s))
+             (blank-wordsenses (remove-if-not #'blank-node-p wordsenses)))
+        (process-wordsenses s blank-wordsenses "wordsense")))))
 
-(defun rename-wordsenses ()
-  (let ((table (mapcar #'car (run-query-as-list "wordsenses-without-blank-nodes.sparql"))))
-    (dolist (s table)
-      (process-wordsenses s (get-wordsenses s) "wordsense" 1))))
-
+;;; these two methods wrongly combine words with similar lexical forms
+;;; for instance "add-on" and "add_on" will be merged.  this is wrong
+;;; i'm preserving these for future reference only.
+#|
 (defun process-all-blank-pt-words (&key (ns "wn30pt"))
   (let ((result (run-query-as-list "pt-blank-words.sparql")))
     (dolist (w result)
@@ -144,7 +121,7 @@
 		  (format nil "word-~a"
 			  (clean-up-word (upi->value (cadr w)))) ns)))
         (merge-nodes (car w) uri)))))
-;;; warning: these are corrupting the triple-store (end)
+|#
 
 ;;this hack was necessary because we had invalid URIs in the database
 ;;specifically a couple of words under http://arademaker.github.com/wn30-br/instances/

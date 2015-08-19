@@ -57,6 +57,14 @@ Detailed steps:
 
    # Run: (FIX-INCORRECTLY-TYPED-LITERALS) on file CLEAN-UP.LISP
 
+10. Fix all blank word senses, by executing
+    PROCESS-ALL-BLANK-WORDSENSES
+
+11. The only remaining issue would be blank nodes, but we need to
+    implement a proper way of dealing with them in a way that doesn't
+    merge words with similar lexical forms (add-up vs. add_up) into
+    the same IRI.
+
 =========================================================
 = After verification is complete, these need to be done =
 =========================================================
