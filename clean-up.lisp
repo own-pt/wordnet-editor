@@ -89,7 +89,7 @@
 ;;had spaces in them.  since none of the libraries that I tried support URIs with
 ;;spaces in them I had to resort to using SUBSEQ.
 (defun process-all-words-with-invalid-chars (&key (ns "wn30pt"))
-  (dolist (w (get-triples-list :p !rdf:type :o !wn30:Word))
+  (dolist (w (get-triples-list :p !rdf:type :o !old-wn30:Word))
     (when (not (blank-node-p (subject w)))
       (let ((word (upi->value (subject w))))
 	(when (find #\space word)

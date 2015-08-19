@@ -6,6 +6,8 @@
 (enable-!-reader)
 (enable-print-decoded t)
 
+(register-namespace "old-wn30"   "http://arademaker.github.com/wn30/schema/" :errorp nil)
+
 (register-namespace "wn30"   "https://w3id.org/own-pt/wn30/schema/" :errorp nil)
 (register-namespace "wn20"   "http://www.w3.org/2006/03/wn/wn20/schema/" :errorp nil)
 (register-namespace "wn30en" "https://w3id.org/own-pt/wn30-en/instances/" :errorp nil)
