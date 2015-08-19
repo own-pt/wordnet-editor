@@ -3,6 +3,43 @@
 ;;; in the future.
 (in-package :wordnet)
 
+
+;;; this procedure goes through all the nodes under the default graph
+;;; and attemps to move them to the proper graphs essentially all
+;;; subjects with certain prefixes that belong to the default graph
+;;; will be moved, along all its related nodes, to the proper graph
+;;; per the following table:
+
+;;http://logics.emap.fgv.br/wn/ own-pt.nt
+;;https://w3id.org/own-pt/nomlex/ nomlex.nt
+;;https://w3id.org/own-pt/wn30-en/ wordnet-en.nt
+;;https://w3id.org/own-pt/wn30-pt/ own-pt.nt
+;;http://wordnet.princeton.edu/ wordnet-en.nt
+
+(defun move-to-graph (node graph)
+  (dolist (tr (get-triples-list :g nil :s node))
+    (add-triple node (predicate tr) (object tr) :g graph)
+    (delete-triple (triple-id tr)))
+  (dolist (tr (get-triples-list :g nil :o node))
+    (add-triple (subject tr) (predicate tr) node :g graph)
+    (delete-triple (triple-id tr))))
+  
+(defun fix-default-graph ()
+  (dolist (tr (get-triples-list :g nil))
+    (let* ((s (subject tr))
+           (subject-value (upi->value (subject tr))))
+      (when (stringp subject-value)
+        (when (alexandria:starts-with-subseq "http://logics.emap.fgv.br/wn/" subject-value)
+          (move-to-graph s !source:own-pt.nt))
+        (when (alexandria:starts-with-subseq "https://w3id.org/own-pt/nomlex/" subject-value)
+          (move-to-graph s !source:own-pt.nt))
+        (when (alexandria:starts-with-subseq "https://w3id.org/own-pt/wn30-pt/" subject-value)
+          (move-to-graph s !source:own-pt.nt))
+        (when (alexandria:starts-with-subseq "https://w3id.org/own-pt/wn30-en/" subject-value)
+          (move-to-graph s !source:wordnet-en.nt))
+        (when (alexandria:starts-with-subseq "http://wordnet.princeton.edu/" subject-value)
+          (move-to-graph s !source:wordnet-en.nt))))))
+  
 (defun clean-up-word (str)
   (cl-ppcre:regex-replace-all "[^\\w]" str "_"))
 
