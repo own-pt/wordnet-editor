@@ -23,7 +23,7 @@ done
 ## Now import new-namespace/ into Allegro Graph, as follows:
 
 ## cd new-namespace
-## agload -g "<file://nomlex.nt>" wn30 own-pt.nt
+## agload -g "<file://own-pt.nt>" wn30 nomlex.nt
 ## agload -g "<file://wnlite.nt>" wn30 wnlite.nt
 ## agload -g "<file://own-pt.nt>" wn30 own-pt.nt
 ## agload -g "<file://wordnet-en.nt>" wn30 wordnet-en.nt

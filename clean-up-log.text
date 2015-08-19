@@ -1,0 +1,84 @@
+From LOGICS.EMAP.FGV.BR to WNPT.BRLCLOUD.COM
+============================================
+
+Notes:
+
+a) All methods mentioned here are from WORDNET-EDITOR; 
+
+b) "Context" and "graph" are the same terms.  Allegro Graph uses
+   "graph", we'll use "context".
+
+High level steps:
+
+1. Fix incorrect IRIs in logics.emap.fgv.br
+2. Rename namespaces
+3. Fix default graph
+4. Process suggestions
+5. Deal with blank nodes
+
+Detailed steps:
+
+1. Some IRIs in the logics.emap.fgv.br had spaces in them, which is
+   not acceptable to Allegro Graph when loading the files.  To fix
+   this, run the method PROCESS-ALL-WORDS-WITH-INVALID-CHARS in
+   (clean-up.lisp)
+
+2. After this is done, export all triples with context information
+   using the method EXPORT-TRIPLES (export.lisp)
+
+3. Execute the script rename-namespace.sh
+
+4. Re-import the files preserving the context information as follows:
+
+   agload -g "<file://own-pt.nt>" wn30 nomlex.nt
+   agload -g "<file://wnlite.nt>" wn30 wnlite.nt
+   agload -g "<file://own-pt.nt>" wn30 own-pt.nt
+   agload -g "<file://wordnet-en.nt>" wn30 wordnet-en.nt
+   agload wn30 default-graph.nt
+
+5. At this point we have the triple-store with the same contents of
+   the original LOGICS.EMAP.FGV.BR triple-store, but with proper
+   namespaces and context information.
+
+6. Process suggestions from the wnpt.brlcloud.com/wn site: execute
+   PROCESS-SUGGESTIONS (suggestions.lisp)
+
+7. Make sure none of the newly added suggestions were added to the
+   default graph:
+
+   (length (get-triples-list :g (default-graph-upi *db*))) should be 0.
+
+8. Fix the remaining default-graph issues by executing
+   FIX-DEFAULT-GRAPH (clean-up.lisp) and
+   fix-remaining-blank-nodes-in-default-graph.
+
+9. We need to clean the literals of the synsetId and tagCount
+   properties (they need to be xsd:nonnegativeInteger).
+
+   # Run: (FIX-INCORRECTLY-TYPED-LITERALS) on file CLEAN-UP.LISP
+
+=========================================================
+= After verification is complete, these need to be done =
+=========================================================
+
+1. New wn30.turtle was provided: need to replace the one in the
+   triple-store (context <file://wnlite.nt>
+
+   # First, execute the following SPARQL:
+
+   # drop graph <file://wnlite.nt>
+
+   Next, import wn30.turtle from the openWordnet-PT project and make
+   sure to use the same context as above (file://wnlite.nt).
+
+3. We need to clean all IRIs that have illegal characters in them.  We
+   should make them only in the standard ASCII values: a-zA-Z0-9.
+
+   # Still need to implement that one.
+
+4. Re-export the files own-pt.nt.gz and wordnet-en.nt.gz
+
+5. Review all numerical properties and put proper restrictions in the
+   wn30.turtle.  Update literals as needed.
+
+6. Review the language tag of all EN and PT words.

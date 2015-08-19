@@ -16,16 +16,19 @@
 ;;https://w3id.org/own-pt/wn30-pt/ own-pt.nt
 ;;http://wordnet.princeton.edu/ wordnet-en.nt
 
+;; after FIX-DEFAULT-GRAPH is execute, there will remain around 3000 blank nodes
+;; these can be fixed with FIX-REMANING-BLANK-NODES-IN-DEFAULT-GRAPH
+
 (defun move-to-graph (node graph)
-  (dolist (tr (get-triples-list :g nil :s node))
+  (dolist (tr (get-triples-list :g (default-graph-upi *db*) :s node))
     (add-triple node (predicate tr) (object tr) :g graph)
     (delete-triple (triple-id tr)))
-  (dolist (tr (get-triples-list :g nil :o node))
+  (dolist (tr (get-triples-list :g (default-graph-upi *db*) :o node))
     (add-triple (subject tr) (predicate tr) node :g graph)
     (delete-triple (triple-id tr))))
   
 (defun fix-default-graph ()
-  (dolist (tr (get-triples-list :g nil))
+  (dolist (tr (get-triples-list :g (default-graph-upi *db*)))
     (let* ((s (subject tr))
            (subject-value (upi->value (subject tr))))
       (when (stringp subject-value)
@@ -40,8 +43,27 @@
         (when (alexandria:starts-with-subseq "http://wordnet.princeton.edu/" subject-value)
           (move-to-graph s !source:wordnet-en.nt))))))
   
+(defun fix-remaining-blank-nodes-in-default-graph ()
+  (dolist (tr (get-triples-list :g (default-graph-upi *db*)))
+    (when (blank-node-p (subject tr))
+      (move-to-graph (subject tr) !source:own-pt.nt))))
+
+;;;;;;;;;;;;;;
+
 (defun clean-up-word (str)
   (cl-ppcre:regex-replace-all "[^\\w]" str "_"))
+
+(defun get-suffix (type)
+  (cond ((part= type !wn30:VerbSynset)
+         "v")
+        ((part= type !wn30:AdjectiveSatelliteSynset)
+         "a")
+        ((part= type !wn30:AdjectiveSynset)
+         "a")
+        ((part= type !wn30:NounSynset)
+         "n")
+        ((part= type !wn30:AdverbSynset)
+         "r")))
 
 (defun make-wordsense-id (synset prefix n)
   (labels ((synset-type (synset)
@@ -49,7 +71,7 @@
 	   (synset-id (synset)
 	     (upi->value (object (get-triple :s synset :p !wn30:synsetId))))
 	   (type-suffix (type)
-	     (upi->value (object (get-triple :s type :p !wn30:suffixCode))))
+             (get-suffix (synset-type synset)))
 	   (encode-synset (s)
 	       (format nil "~a-~a"
 		       (synset-id synset)
@@ -95,6 +117,8 @@
 (defun get-wordsenses (synset)
   (mapcar #'object (get-triples-list :s synset :p !wn30:containsWordSense)))
 
+;;; warning: these are corrupting the triple-store (begin)
+;;; refrain from using until the bug is fixed.
 (defun process-all-blank-wordsenses ()
   (let ((table (mapcar #'car (run-query-as-list "wordsenses-with-blank-nodes.sparql"))))
     (dolist (s table)
@@ -120,6 +144,7 @@
 		  (format nil "word-~a"
 			  (clean-up-word (upi->value (cadr w)))) ns)))
         (merge-nodes (car w) uri)))))
+;;; warning: these are corrupting the triple-store (end)
 
 ;;this hack was necessary because we had invalid URIs in the database
 ;;specifically a couple of words under http://arademaker.github.com/wn30-br/instances/

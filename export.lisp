@@ -10,9 +10,9 @@
 
 (defun export-all ()
   (export-triples (get-triples :g (default-graph-upi *db*)) "/tmp/e/default-graph.nt")
-  (export-triples (get-triples :g !source:nomlex-pt.rdf.gz) "/tmp/e/nomlex.nt")
-  (export-triples (get-triples :g !source:wnlite.turtle) "/tmp/e/wnlite.nt")
-  (export-triples (get-triples :g !source:wordnet-en.ntriples.gz) "/tmp/e/wordnet-en.nt")
-  (export-triples (get-triples :g !source:openWordnet-PT.rdf.gz) "/tmp/e/own-pt.nt"))
+  (export-triples (get-triples :g !old-source:nomlex-pt.rdf.gz) "/tmp/e/nomlex.nt")
+  (export-triples (get-triples :g !old-source:wnlite.turtle) "/tmp/e/wnlite.nt")
+  (export-triples (get-triples :g !old-source:wordnet-en.ntriples.gz) "/tmp/e/wordnet-en.nt")
+  (export-triples (get-triples :g !old-source:openWordnet-PT.rdf.gz) "/tmp/e/own-pt.nt"))
 
   
