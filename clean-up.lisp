@@ -102,26 +102,24 @@
              (blank-wordsenses (remove-if-not #'blank-node-p wordsenses)))
         (process-wordsenses s blank-wordsenses "wordsense")))))
 
-;;; these two methods wrongly combine words with similar lexical forms
-;;; for instance "add-on" and "add_on" will be merged.  this is wrong
-;;; i'm preserving these for future reference only.
-#|
+(defun process-word (old lf ns n)
+  (let ((uri (resource 
+              (if (> n 0)
+                  (format nil "word-~a-~a" lf n) 
+                  (format nil "word-~a" lf)) ns)))
+    (if (or (get-triples-list :s uri) (get-triples-list :o uri))
+        (process-word old lf ns (1+ n))
+        (merge-nodes old uri))))
+
 (defun process-all-blank-pt-words (&key (ns "wn30pt"))
   (let ((result (run-query-as-list "pt-blank-words.sparql")))
     (dolist (w result)
-      (let ((uri (resource 
-		  (format nil "word-~a"
-			  (clean-up-word (upi->value (cadr w)))) ns)))
-        (merge-nodes (car w) uri)))))
+      (process-word (car w) (clean-up-word (upi->value (cadr w))) ns 0))))
 
 (defun process-all-blank-en-words (&key (ns "wn30en"))
   (let ((result (run-query-as-list "en-blank-words.sparql")))
     (dolist (w result)
-      (let ((uri (resource 
-		  (format nil "word-~a"
-			  (clean-up-word (upi->value (cadr w)))) ns)))
-        (merge-nodes (car w) uri)))))
-|#
+      (process-word (car w) (clean-up-word (upi->value (cadr w))) ns 0))))
 
 ;;this hack was necessary because we had invalid URIs in the database
 ;;specifically a couple of words under http://arademaker.github.com/wn30-br/instances/
