@@ -63,6 +63,9 @@ Detailed steps:
 11. Fix all blank word nodes, by executing PROCESS-ALL-BLANK-PT-WORDS
     and PROCESS-ALL-BLANK-EN-WORDS.
 
+12. There are some dangling nodes that are reminiscent of the
+    LOGICS.EMAP.FGV.BR triple-store. These need to be cleaned.
+
 =========================================================
 = After verification is complete, these need to be done =
 =========================================================
