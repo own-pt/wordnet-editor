@@ -1,5 +1,6 @@
-
 (in-package :wordnet)
+
+(defparameter *own-pt-source* !source:own-pt.nt)
 
 (defparameter *ptrs* (list !wn30:hypernymOf 
 			   !wn30:hyponymOf  
@@ -69,8 +70,8 @@
     (or (car words)
 	(let* ((uri (format nil "word-~a" (replace-regexp a-form "[ ]+" "_")))
 	       (res (resource uri ns)))
-	  (add-triple res !rdf:type !wn30:Word) 
-	  (add-triple res !wn30:lexicalForm lit)
+	  (add-triple res !rdf:type !wn30:Word :g *own-pt-source*) 
+	  (add-triple res !wn30:lexicalForm lit :g *own-pt-source*)
 	  res))))
 
 (defun define-synset (synset prop values)
@@ -78,15 +79,15 @@
   (delete-triples :s synset :p prop)
   (if (listp values)
       (dolist (v values) 
-	(add-triple synset prop (literal v :language "pt")))
-      (add-triple synset prop (literal values :language "pt"))))
+	(add-triple synset prop (literal v :language "pt") :g *own-pt-source*))
+      (add-triple synset prop (literal values :language "pt") :g *own-pt-source*)))
 
 (defun add-synset-prop (synset prop values)
   (assert (synset? synset))
   (if (listp values)
       (dolist (v values) 
-	(add-triple synset prop (literal v :language "pt")))
-      (add-triple synset prop (literal values :language "pt"))))
+	(add-triple synset prop (literal v :language "pt") :g *own-pt-source*))
+      (add-triple synset prop (literal values :language "pt") :g *own-pt-source*)))
 
 (defun add-synset-word (synset a-form)
   (assert (synset? synset))
@@ -94,10 +95,10 @@
 	 (a-word (add-word a-form)))
     (unless (synset-has-word? synset a-form)
       (with-blank-nodes (sense)
-	(add-triple synset !wn30:containsWordSense sense)
-	(add-triple sense !rdf:type !wn30:WordSense)
-	(add-triple sense !rdfs:label lit)
-	(add-triple sense !wn30:word a-word)))))
+	(add-triple synset !wn30:containsWordSense sense :g *own-pt-source*)
+	(add-triple sense !rdf:type !wn30:WordSense :g *own-pt-source*)
+	(add-triple sense !rdfs:label lit :g *own-pt-source*)
+	(add-triple sense !wn30:word a-word :g *own-pt-source*)))))
 
 (defun get-synsets (a-string)
   (select0-distinct ?ss 
@@ -163,11 +164,11 @@
   (let ((node (resource (format nil "nomlex-~a-~a" verb noun) "nm-pt"))
 	(a-noun (add-word noun))
 	(a-verb (add-word verb)))
-    (add-triple node !nomlex:noun a-noun)
-    (add-triple node !nomlex:verb a-verb)
-    (add-triple node !rdf:type !nomlex:Nominalization)
+    (add-triple node !nomlex:noun a-noun :g *own-pt-source*)
+    (add-triple node !nomlex:verb a-verb :g *own-pt-source*)
+    (add-triple node !rdf:type !nomlex:Nominalization :g *own-pt-source*)
     (if prov
-	(add-triple node !dc:provenance (literal prov)))
+	(add-triple node !dc:provenance (literal prov) :g *own-pt-source*))
     node))
 
 (defun remove-nomlex (&key (noun nil) (verb nil))
