@@ -268,5 +268,3 @@
     (dolist (w result)
       (let ((uri (resource (format nil "word-~a" (replace-regexp (cadr result) "[ ]+" "_")) ns)))
 	(merge-nodes (car result) uri)))))
-
-
