@@ -63,31 +63,15 @@ Detailed steps:
 11. Fix all blank word nodes, by executing PROCESS-ALL-BLANK-PT-WORDS
     and PROCESS-ALL-BLANK-EN-WORDS.
 
-12. There are some dangling nodes that are reminiscent of the
-    LOGICS.EMAP.FGV.BR triple-store. These need to be cleaned.
+========================================================
+= After verification is complete, these need were done =
+========================================================
 
-=========================================================
-= After verification is complete, these need to be done =
-=========================================================
+12. New wn30.turtle was provided: need to replace the one in the
+    triple-store (context <file://wnlite.nt>
 
-1. New wn30.turtle was provided: need to replace the one in the
-   triple-store (context <file://wnlite.nt>
+    # First, execute the following SPARQL:
+    # drop graph <file://wnlite.nt>
 
-   # First, execute the following SPARQL:
-
-   # drop graph <file://wnlite.nt>
-
-   Next, import wn30.turtle from the openWordnet-PT project and make
-   sure to use the same context as above (file://wnlite.nt).
-
-3. We need to clean all IRIs that have illegal characters in them.  We
-   should make them only in the standard ASCII values: a-zA-Z0-9.
-
-   # Still need to implement that one.
-
-4. Re-export the files own-pt.nt.gz and wordnet-en.nt.gz
-
-5. Review all numerical properties and put proper restrictions in the
-   wn30.turtle.  Update literals as needed.
-
-6. Review the language tag of all EN and PT words.
+13. Next, imported wn30.ttl from the openWordnet-PT with the
+    proper context
