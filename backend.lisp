@@ -85,9 +85,14 @@
 (defun add-synset-prop (synset prop values)
   (assert (synset? synset))
   (if (listp values)
-      (dolist (v values) 
-	(add-triple synset prop (literal v :language "pt") :g *own-pt-source*))
-      (add-triple synset prop (literal values :language "pt") :g *own-pt-source*)))
+      (dolist (v values)
+        (add-synset-prop1 synset prop v))
+      (add-synset-prop1 synset prop values)))
+
+(defun add-synset-prop1 (synset prop value)
+  (assert (synset? synset))
+  (unless (get-triples-list :s synset :p prop :o (literal value :language "pt"))
+    (add-triple synset prop (literal value :language "pt") :g *own-pt-source*)))
 
 (defun add-synset-word (synset a-form)
   (assert (synset? synset))
