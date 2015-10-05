@@ -17,7 +17,8 @@
 
   
 (defun export-all ()
-  (export-triples (get-triples :g !source:wnlite.turtle) "/tmp/e/wnlite.nt")
+  (export-triples (get-triples :g !source:wn30.ttl) "/tmp/e/wn30.nt")
+  (export-triples (get-triples :g !source:morphosemantic-links.xlsx) "/tmp/e/morphosemantic-links.nt")
   (export-triples (get-triples :g !source:own-pt.nt) "/tmp/e/own-pt.nt")
   (export-triples (get-triples :g !source:wordnet-en.nt) "/tmp/e/wordnet-en.nt"))
 
