@@ -1,8 +1,8 @@
 (in-package :wordnet)
 
-;;(defvar *suggestions-core* (make-instance 'solr:solr :uri "http://localhost:8983/solr/suggestions"))
+(defvar *suggestions-core* (make-instance 'solr:solr :uri "http://localhost:8983/solr/suggestions"))
 
-(defvar *suggestions-core* (make-instance 'solr:solr :uri "http://wnpt.brlcloud.com:8983/solr/suggestions"))
+;;(defvar *suggestions-core* (make-instance 'solr:solr :uri "http://wnpt.brlcloud.com:8983/solr/suggestions"))
 
 (defun search-suggestions ()
   (solr:solr-result->doc-alist
