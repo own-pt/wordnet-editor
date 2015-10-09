@@ -1,28 +1,45 @@
 (in-package :wordnet)
 
-;; 1   2       3       4    5    6  7      8      9   A
-;; ?nm ?sptid1 ?sptid2 ?lf1 ?lf2 ?p ?lexf1 ?lexf2 ?g1 ?g2
+(defun get-synset-words (query synset)
+  (mapcar (lambda (w) (part->value (car w))) 
+          (sparql:run-sparql query 
+                             :with-variables `((?synset . ,synset)) ;;(list (cons '?synset  synset))
+                             :engine :sparql-1.1 
+                             :results-format :lists)))
+
+
+;; select distinct ?nm ?sptid1 ?sptid2 ?lf1 ?lf2 ?p ?g1 ?g2 ?lws1 ?lws2
 (defun generate-html-report ()
-  (let ((rows (run-query-as-list "missing-nouns.sparql")))
+  (let ((rows (run-query-as-list "missing-nouns.sparql"))
+        (synset-words-query (sparql:parse-sparql (query-string "synset-words.sparql"))))
     (with-open-file (out "morpholinks.html" :direction :output :if-exists :supersede)
       (format out "<html><header><META http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></header><body><h1>Morpholinks sem tradu&ccedil;&atilde;o para o substantivo.</h1><table>")
       (dolist (rr rows)
-        (let* ((r (mapcar #'upi->value rr))
-               (nomlex (first r))
-               (synset1 (second r))
-               (synset2 (third r))
-               (lexform1 (fourth r))
-               (lexform2 (fifth r))
-               (relation (sixth r))
-               (lexfile1 (seventh r))
-               (lexfile2 (eighth r))
-               (gloss1 (ninth r))
-               (gloss2 (tenth r)))
-        (format out "<ul>~%")
-        (format out "<li><a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-v\">~a-v</a> (~a)</li>" synset1 synset1 gloss1)
-        (format out "<li><a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-n\">~a-n</a> (~a)</li>" synset2 synset2 gloss2)
-        (format out "<li>~a/~a</li>" lexform1 lexform2)
-        (format out "<li>~a</li>" relation)
-        (format out "<li>~a/~a</li>" lexfile1 lexfile2)
-        (format out "</ul>~%")))
+        (destructuring-bind (nomlex synsetId1 synsetId2 ptSynset1 ptSynset2 nomlex-verb nomlex-noun relation gloss1 gloss2 en-word1 en-word2) rr
+          (format out "<ul>~%")
+          (format out "<li><b>~a</b> &rArr; <i>~a</i> &rArr; <b>~a</b> | <b>~a</b> &rArr; ~a</li>" 
+                  (upi->value en-word1)
+                  relation
+                  (upi->value en-word2)
+                  (upi->value nomlex-verb)
+                  (upi->value nomlex-noun))
+          (format out "<li><a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-v\">~a-v</a> (~a)</li>" 
+                  (upi->value synsetId1)
+                  (upi->value synsetId1)
+                  (upi->value gloss1))
+          (let ((words (get-synset-words synset-words-query ptSynset1)))
+            (when words 
+              (format out "<ul>")
+              (format out "<li>~{~a~^, ~}" words)
+              (format out "</ul>")))
+          (format out "<li><a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-n\">~a-n</a> (~a)</li>"
+                  (upi->value synsetId2)
+                  (upi->value synsetId2)
+                  (upi->value gloss2))
+          (let ((words (get-synset-words synset-words-query ptSynset2)))
+            (when words 
+              (format out "<ul>")
+              (format out "<li>~{~a~^, ~}" words)
+              (format out "</ul>")))
+          (format out "</ul>~%")))
       (format out "</table></body></html>"))))

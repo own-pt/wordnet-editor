@@ -1,8 +1,11 @@
 prefix wn30: <https://w3id.org/own-pt/wn30/schema/>
 
-select distinct ?nm ?sptid1 ?sptid2 ?lf1 ?lf2 ?p ?lexf1 ?lexf2 ?g1 ?g2
+select distinct ?nm ?sptid1 ?sptid2 ?spt1 ?spt2 ?lf1 ?lf2 ?p ?g1 ?g2 ?lws1 ?lws2
 {
   ?ws1 ?p ?ws2 .
+
+  ?ws1 rdfs:label ?lws1 .
+  ?ws2 rdfs:label ?lws2 .
  
   ?p rdfs:subPropertyOf nomlex:morphosemanticLink .
  

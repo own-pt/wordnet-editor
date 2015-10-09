@@ -1,4 +1,4 @@
-PREFIX wn30: <http://arademaker.github.com/wn30/schema/>
+prefix wn30: <https://w3id.org/own-pt/wn30/schema/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 select distinct ?lf {
