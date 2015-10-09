@@ -1,0 +1,38 @@
+prefix wn30: <https://w3id.org/own-pt/wn30/schema/>
+
+select distinct ?nm ?sptid1 ?sptid2 ?lf1 ?lf2 ?p ?lexf1 ?lexf2 ?g1 ?g2
+{
+  ?ws1 ?p ?ws2 .
+ 
+  ?p rdfs:subPropertyOf nomlex:morphosemanticLink .
+ 
+  ?ss1 wn30:containsWordSense ?ws1 .
+  ?ss2 wn30:containsWordSense ?ws2 .
+
+  ?spt1 wn30:synsetId ?sptid1 .
+  ?spt2 wn30:synsetId ?sptid2 .
+
+  ?ss1 wn30:gloss ?g1 .
+  ?ss2 wn30:gloss ?g2 .
+  
+  ?ss1 owl:sameAs ?spt1 .
+  ?ss2 owl:sameAs ?spt2 .
+ 
+  ?ss1 wn30:lexicographerFile ?lexf1 .
+  ?ss2 wn30:lexicographerFile ?lexf2 .
+  
+  ?nm nomlex:verb ?w1 .
+  ?nm nomlex:noun ?w2 .
+
+  ?w1 wn30:lexicalForm ?lf1 .
+  ?w2 wn30:lexicalForm ?lf2 .
+  
+  ?spt1 wn30:containsWordSense/wn30:word ?w1 .
+  
+  filter not exists
+  {
+      ?spt2 wn30:containsWordSense/wn30:word ?w2 .
+  }
+
+}
+order by ?nm ?spt1 ?spt2
