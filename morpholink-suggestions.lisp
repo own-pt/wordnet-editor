@@ -12,7 +12,7 @@
 (defun generate-missing-nouns-html-report ()
   (let ((rows (run-query-as-list "missing-nouns.sparql"))
         (synset-words-query (sparql:parse-sparql (query-string "synset-words.sparql"))))
-    (with-open-file (out "morpholinks.html" :direction :output :if-exists :supersede)
+    (with-open-file (out "/tmp/morpholinks-nouns.html" :direction :output :if-exists :supersede)
       (format out "<html><header><META http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></header><body><h1>Morpholinks sem tradu&ccedil;&atilde;o para o substantivo.</h1><table>")
       (dolist (rr rows)
         (destructuring-bind (nomlex synsetId1 synsetId2 ptSynset1 ptSynset2 nomlex-verb nomlex-noun relation gloss1 gloss2 en-word1 en-word2) rr
@@ -47,7 +47,7 @@
 (defun generate-missing-verbs-html-report ()
   (let ((rows (run-query-as-list "missing-verbs.sparql"))
         (synset-words-query (sparql:parse-sparql (query-string "synset-words.sparql"))))
-    (with-open-file (out "morpholinks.html" :direction :output :if-exists :supersede)
+    (with-open-file (out "/tmp/morpholinks-verbs.html" :direction :output :if-exists :supersede)
       (format out "<html><header><META http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></header><body><h1>Morpholinks sem tradu&ccedil;&atilde;o para o verbo.</h1><table>")
       (dolist (rr rows)
         (destructuring-bind (nomlex synsetId1 synsetId2 ptSynset1 ptSynset2 nomlex-verb nomlex-noun relation gloss1 gloss2 en-word1 en-word2) rr
