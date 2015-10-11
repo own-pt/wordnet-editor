@@ -22,10 +22,10 @@
                   (upi->value w1)
                   relation
                   (upi->value w2))
-          (format out "<li><a href=\"http://wnpt.brlcloud.com/wn/search?term=~a-v\">verb</a> (~a)~%"
+          (format out "<li><a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/search?term=~a-v\">verb</a> (~a)~%"
                   (upi->value synsetId1)
                   (upi->value gloss1))
-          (format out "<li><a href=\"http://wnpt.brlcloud.com/wn/search?term=~a-n\">noun</a> (~a)~%"
+          (format out "<li><a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/search?term=~a-n\">noun</a> (~a)~%"
                   (upi->value synsetId2)
                   (upi->value gloss2))
           (format out "</ul>"))))))
@@ -65,6 +65,53 @@
               (format out "</ul>")))
           (format out "</ul>~%")))
       (format out "</table></body></html>"))))
+
+(defun check-heuristic (en-noun pt-noun)
+  (and (or (alexandria:ends-with-subseq "er" en-noun)
+           (alexandria:ends-with-subseq "or" en-noun))
+       (or (alexandria:ends-with-subseq "or" pt-noun)
+           (alexandria:ends-with-subseq  "nte" pt-noun))))
+
+
+;; Palavras com -er e -or em EN terão a maioria dos seus
+;; correspondentes em -or ou -nte em PT , logo você poderia fazer um
+;; relatório apenas com estas sugestões. Cruzar palavras com -er/-or
+;; em EN com palavras com -or ou -nte em PT.
+(defun generate-missing-nouns-html-report-h1 ()
+  (let ((rows (run-query-as-list "missing-nouns.sparql"))
+        (synset-words-query (sparql:parse-sparql (query-string "synset-words.sparql"))))
+    (with-open-file (out "/tmp/morpholinks-nouns-heuristic-1.html" :direction :output :if-exists :supersede)
+      (format out "<html><header><META http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></header><body><h1>Morpholinks sem tradu&ccedil;&atilde;o para o substantivo (er/or - or/nte).</h1><table>")
+      (dolist (rr rows)
+        (destructuring-bind (nomlex synsetId1 synsetId2 ptSynset1 ptSynset2 nomlex-verb nomlex-noun relation gloss1 gloss2 en-word1 en-word2) rr
+          (when (check-heuristic (upi->value en-word2) (upi->value nomlex-noun))
+            (format out "<ul>~%")
+            (format out "<li><b>~a</b> &rArr; <i>~a</i> &rArr; <b>~a</b> | <b>~a</b> &rArr; ~a</li>" 
+                    (upi->value en-word1)
+                    relation
+                    (upi->value en-word2)
+                    (upi->value nomlex-verb)
+                    (upi->value nomlex-noun))
+            (format out "<li><a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-v\">~a-v</a> (~a)</li>" 
+                    (upi->value synsetId1)
+                    (upi->value synsetId1)
+                    (upi->value gloss1))
+            (let ((words (get-synset-words synset-words-query ptSynset1)))
+              (when words 
+                (format out "<ul>")
+                (format out "<li>~{~a~^, ~}" words)
+                (format out "</ul>")))
+            (format out "<li><a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-n\">~a-n</a> (~a)</li>"
+                    (upi->value synsetId2)
+                    (upi->value synsetId2)
+                    (upi->value gloss2))
+            (let ((words (get-synset-words synset-words-query ptSynset2)))
+              (when words 
+                (format out "<ul>")
+                (format out "<li>~{~a~^, ~}" words)
+                (format out "</ul>")))
+            (format out "</ul>~%")))
+        (format out "</table></body></html>")))))
 
 (defun generate-missing-verbs-html-report ()
   (let ((rows (run-query-as-list "missing-verbs.sparql"))
