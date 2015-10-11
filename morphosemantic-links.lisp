@@ -8,6 +8,28 @@
                              :results-format :lists)))
 
 
+(defun generate-morphosemantic-links-pt-report ()
+  (let ((rows (run-query-as-list "morphosemantic-links.sparql"))
+        (cnt 0))
+    (with-open-file (out "/tmp/morphosemantic-links-pt.html" :direction :output :if-exists :supersede)
+      (format out "<html><header><META http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></header><body><h1>Morphosemantic links PT.</h1><table>")
+      (dolist (rr rows)
+        (destructuring-bind (w1 w2 relation synsetId1 synsetId2 gloss1 gloss2) rr
+          (incf cnt)
+          (format out "<ul>")
+          (format out "<li>[~a] <b>~a</b> &rArr; <i>~a</i> &rArr; <b>~a</b>~%"
+                  cnt
+                  (upi->value w1)
+                  relation
+                  (upi->value w2))
+          (format out "<li><a href=\"http://wnpt.brlcloud.com/wn/search?term=~a-v\">verb</a> (~a)~%"
+                  (upi->value synsetId1)
+                  (upi->value gloss1))
+          (format out "<li><a href=\"http://wnpt.brlcloud.com/wn/search?term=~a-n\">noun</a> (~a)~%"
+                  (upi->value synsetId2)
+                  (upi->value gloss2))
+          (format out "</ul>"))))))
+
 ;; select distinct ?nm ?sptid1 ?sptid2 ?lf1 ?lf2 ?p ?g1 ?g2 ?lws1 ?lws2
 (defun generate-missing-nouns-html-report ()
   (let ((rows (run-query-as-list "missing-nouns.sparql"))
