@@ -22,6 +22,17 @@
           (when (member cnt *to-delete*)
             (format out "~a ~a ~a~%" s1 relation s2)))))))
 
+(defun generate-morphosemantic-links-suffix-report ()
+  (let ((rows (run-query-as-list "morphosemantic-suffixes.sparql"))
+        (cnt 0))
+    (with-open-file (out "/tmp/morphosemantic-links-suffixes.csv" :direction :output :if-exists :supersede)
+      (dolist (rr rows)
+        (destructuring-bind (w1 relation w2) rr
+          (let* ((word1 (upi->value w1))
+                 (word2 (upi->value w2))
+                 (m (mismatch word1 word2)))
+            (format out "~a, {~a}, ~a~%" (subseq word1 m) relation (subseq word2 m))))))))
+
 (defun generate-morphosemantic-links-pt-report ()
   (let ((rows (run-query-as-list "morphosemantic-links.sparql"))
         (cnt 0))
@@ -84,7 +95,6 @@
            (alexandria:ends-with-subseq "or" en-noun))
        (or (alexandria:ends-with-subseq "or" pt-noun)
            (alexandria:ends-with-subseq  "nte" pt-noun))))
-
 
 ;; Palavras com -er e -or em EN terão a maioria dos seus
 ;; correspondentes em -or ou -nte em PT , logo você poderia fazer um
