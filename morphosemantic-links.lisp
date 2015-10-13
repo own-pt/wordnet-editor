@@ -22,7 +22,6 @@
           (when (member cnt *to-delete*)
             (format out "~a ~a ~a~%" s1 relation s2)))))))
 
-
 (defun generate-morphosemantic-links-pt-report ()
   (let ((rows (run-query-as-list "morphosemantic-links.sparql"))
         (cnt 0))
@@ -53,37 +52,32 @@
     (with-open-file (out "/tmp/morpholinks-nouns.html" 
                          :direction :output :if-exists :supersede)
       (format out "<html><header><META http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></header><body><h1>Morpholinks sem tradu&ccedil;&atilde;o para o substantivo.</h1><table>")
+      (format out "<ol>~%")
       (dolist (rr rows)
         (destructuring-bind (nomlex synsetId1 synsetId2 ptSynset1 ptSynset2 
                                     nomlex-verb nomlex-noun relation 
                                     gloss1 gloss2 en-word1 en-word2) rr
-          (format out "<ul>~%")
-          (format out "<li><b>~a</b> &rArr; <i>~a</i> &rArr; <b>~a</b> | <b>~a</b> &rArr; ~a</li>" 
+          (format out "<li style=\"width: 60%;\"><b>~a</b> &rArr; <i>~a</i> &rArr; <b>~a</b> | <b>~a</b> &rArr; ~a<br>" 
                   (upi->value en-word1)
                   relation
                   (upi->value en-word2)
                   (upi->value nomlex-verb)
                   (upi->value nomlex-noun))
-          (format out "<li><a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-v\">~a-v</a> (~a)</li>" 
+          (format out "<a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-v\">~a-v</a> (~a)<br>" 
                   (upi->value synsetId1)
                   (upi->value synsetId1)
                   (upi->value gloss1))
           (let ((words (get-synset-words synset-words-query ptSynset1)))
-            (when words 
-              (format out "<ul>")
-              (format out "<li>~{~a~^, ~}" words)
-              (format out "</ul>")))
-          (format out "<li><a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-n\">~a-n</a> (~a)</li>"
+            (when words (format out "&rArr; ~{~a~^, ~}<br>" words)))
+
+          (format out "<a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-n\">~a-n</a> (~a)<br>"
                   (upi->value synsetId2)
                   (upi->value synsetId2)
                   (upi->value gloss2))
           (let ((words (get-synset-words synset-words-query ptSynset2)))
-            (when words 
-              (format out "<ul>")
-              (format out "<li>~{~a~^, ~}" words)
-              (format out "</ul>")))
-          (format out "</ul>~%")))
-      (format out "</table></body></html>"))))
+            (when words (format out "&rArr; ~{~a~^, ~}" words)))
+          (format out "</li>~%")))
+      (format out "</ul></table></body></html>"))))
 
 (defun check-heuristic (en-noun pt-noun)
   (and (or (alexandria:ends-with-subseq "er" en-noun)
@@ -101,38 +95,33 @@
         (synset-words-query (sparql:parse-sparql (query-string "synset-words.sparql"))))
     (with-open-file (out "/tmp/morpholinks-nouns-heuristic-1.html" :direction :output :if-exists :supersede)
       (format out "<html><header><META http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></header><body><h1>Morpholinks sem tradu&ccedil;&atilde;o para o substantivo (er/or - or/nte).</h1><table>")
+      (format out "<ol>~%")
       (dolist (rr rows)
         (destructuring-bind (nomlex synsetId1 synsetId2 ptSynset1 ptSynset2
                                     nomlex-verb nomlex-noun relation
                                     gloss1 gloss2 en-word1 en-word2) rr
           (when (check-heuristic (upi->value en-word2) (upi->value nomlex-noun))
-            (format out "<ul>~%")
-            (format out "<li><b>~a</b> &rArr; <i>~a</i> &rArr; <b>~a</b> | <b>~a</b> &rArr; ~a</li>" 
+            (format out "<li style=\"width: 60%;\"><b>~a</b> &rArr; <i>~a</i> &rArr; <b>~a</b> | <b>~a</b> &rArr; ~a<br>" 
                     (upi->value en-word1)
                     relation
                     (upi->value en-word2)
                     (upi->value nomlex-verb)
                     (upi->value nomlex-noun))
-            (format out "<li><a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-v\">~a-v</a> (~a)</li>" 
+            (format out "<a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-v\">~a-v</a> (~a)<br>" 
                     (upi->value synsetId1)
                     (upi->value synsetId1)
                     (upi->value gloss1))
             (let ((words (get-synset-words synset-words-query ptSynset1)))
-              (when words 
-                (format out "<ul>")
-                (format out "<li>~{~a~^, ~}" words)
-                (format out "</ul>")))
-            (format out "<li><a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-n\">~a-n</a> (~a)</li>"
+              (when words (format out "&rArr; ~{~a~^, ~}<br>" words)))
+            
+            (format out "<a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-n\">~a-n</a> (~a)<br>"
                     (upi->value synsetId2)
                     (upi->value synsetId2)
                     (upi->value gloss2))
             (let ((words (get-synset-words synset-words-query ptSynset2)))
-              (when words 
-                (format out "<ul>")
-                (format out "<li>~{~a~^, ~}" words)
-                (format out "</ul>")))
-            (format out "</ul>~%")))
-        (format out "</table></body></html>")))))
+              (when words (format out "&rArr; ~{~a~^, ~}" words)))
+            (format out "</li>~%"))))
+      (format out "</ol></table></body></html>"))))
 
 (defun generate-missing-verbs-html-report ()
   (let ((rows (run-query-as-list "missing-verbs.sparql"))
@@ -141,34 +130,29 @@
     (with-open-file (out "/tmp/morpholinks-verbs.html" 
                          :direction :output :if-exists :supersede)
       (format out "<html><header><META http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></header><body><h1>Morpholinks sem tradu&ccedil;&atilde;o para o verbo.</h1><table>")
+      (format out "<ol>~%")
       (dolist (rr rows)
         (destructuring-bind (nomlex synsetId1 synsetId2 ptSynset1 ptSynset2 
                                     nomlex-verb nomlex-noun relation
                                     gloss1 gloss2 en-word1 en-word2) rr
-          (format out "<ul>~%")
-          (format out "<li><b>~a</b> &rArr; <i>~a</i> &rArr; <b>~a</b> | ~a &rArr; <b>~a</b></li>" 
+          (format out "<li style=\"width: 60%;\"><b>~a</b> &rArr; <i>~a</i> &rArr; <b>~a</b> | ~a &rArr; <b>~a</b><br>" 
                   (upi->value en-word1)
                   relation
                   (upi->value en-word2)
                   (upi->value nomlex-verb)
                   (upi->value nomlex-noun))
-          (format out "<li><a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-v\">~a-v</a> (~a)</li>" 
+          (format out "<a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-v\">~a-v</a> (~a)<br>" 
                   (upi->value synsetId1)
                   (upi->value synsetId1)
                   (upi->value gloss1))
           (let ((words (get-synset-words synset-words-query ptSynset1)))
-            (when words 
-              (format out "<ul>")
-              (format out "<li>~{~a~^, ~}" words)
-              (format out "</ul>")))
-          (format out "<li><a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-n\">~a-n</a> (~a)</li>"
+            (when words (format out "&rArr; ~{~a~^, ~}<br>" words)))
+          
+          (format out "<a target=\"_blank\" href=\"http://wnpt.brlcloud.com/wn/synset?id=~a-n\">~a-n</a> (~a)<br>"
                   (upi->value synsetId2)
                   (upi->value synsetId2)
                   (upi->value gloss2))
           (let ((words (get-synset-words synset-words-query ptSynset2)))
-            (when words 
-              (format out "<ul>")
-              (format out "<li>~{~a~^, ~}" words)
-              (format out "</ul>")))
-          (format out "</ul>~%")))
-      (format out "</table></body></html>"))))
+            (when words (format out "&rArr; ~{~a~^, ~}" words)))
+          (format out "</li>~%")))
+      (format out "</ol></table></body></html>"))))
