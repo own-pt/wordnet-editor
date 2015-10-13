@@ -1,11 +1,23 @@
 (in-package :wordnet)
 
+(defparameter *to-delete* '(1 2 3))
+
 (defun get-synset-words (query synset)
   (mapcar (lambda (w) (part->value (car w))) 
           (sparql:run-sparql query 
                              :with-variables `((?synset . ,synset)) ;;(list (cons '?synset  synset))
                              :engine :sparql-1.1 
                              :results-format :lists)))
+
+(defun generate-list-of-morphosemantic-links-to-delete ()
+  (let ((rows (run-query-as-list "morphosemantic-links.sparql"))
+        (cnt 0))
+    (with-open-file (out "/tmp/morphosemantic-links-pt.txt" :direction :output :if-exists :supersede)
+      (dolist (rr rows)
+        (destructuring-bind (w1 w2 relation synsetId1 synsetId2 gloss1 gloss2 s1 s2) rr
+          (incf cnt)
+          (when (member cnt *to-delete*)
+            (format out "~a ~a ~a~%" s1 relation s2)))))))
 
 
 (defun generate-morphosemantic-links-pt-report ()
