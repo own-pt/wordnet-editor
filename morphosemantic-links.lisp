@@ -25,13 +25,12 @@
 (defun generate-morphosemantic-links-suffix-report ()
   (let ((rows (run-query-as-list "morphosemantic-suffixes.sparql"))
         (cnt 0))
-    (with-open-file (out "/tmp/morphosemantic-links-suffixes.csv" :direction :output :if-exists :supersede)
+    (with-open-file (out "/tmp/morphosemantic-links-words.csv" :direction :output :if-exists :supersede)
       (dolist (rr rows)
         (destructuring-bind (w1 relation w2) rr
-          (let* ((word1 (upi->value w1))
-                 (word2 (upi->value w2))
-                 (m (mismatch word1 word2)))
-            (format out "~a, {~a}, ~a~%" (subseq word1 m) relation (subseq word2 m))))))))
+          (let ((word1 (upi->value w1))
+                 (word2 (upi->value w2)))
+            (format out "~a, ~a, ~a~%" word1 relation word2)))))))
 
 (defun generate-morphosemantic-links-pt-report ()
   (let ((rows (run-query-as-list "morphosemantic-links.sparql"))
