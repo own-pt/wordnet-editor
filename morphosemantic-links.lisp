@@ -1,6 +1,48 @@
 (in-package :wordnet)
 
-(defparameter *to-delete* '(1 2 3))
+;; these were analyzed by Livy and Valeria and found to be invalid.
+;; Keeping them here since we may want to regenerate our
+;; morphosemantic links conversion from english to portugues again in
+;; the future as we add and remove words from our PT synsets.
+(defparameter *invalid-pt-morphosemantic-triples*
+'((!wn30pt:wordsense-00924873-v-1 !nomlex:agent !wn30pt:wordsense-09762101-n-1)
+  (!wn30pt:wordsense-01346003-v-1 !nomlex:agent !wn30pt:wordsense-10737431-n-1)
+  (!wn30pt:wordsense-00416399-v-1 !nomlex:agent !wn30pt:wordsense-10071332-n-1)
+  (!wn30pt:wordsense-00818805-v-1 !nomlex:agent !wn30pt:wordsense-09954355-n-1)
+  (!wn30pt:wordsense-02220461-v-1 !nomlex:agent !wn30pt:wordsense-01107932-n-1)
+  (!wn30pt:wordsense-02541251-v-1 !nomlex:agent !wn30pt:wordsense-08186047-n-1)
+  (!wn30pt:wordsense-00413704-v-1 !nomlex:agent !wn30pt:wordsense-08413834-n-1)
+  (!wn30pt:wordsense-01645601-v-1 !nomlex:agent !wn30pt:wordsense-00007347-n-1)
+  (!wn30pt:wordsense-01970348-v-1 !nomlex:event !wn30pt:wordsense-07445480-n-1)
+  (!wn30pt:wordsense-00270005-v-1 !nomlex:event !wn30pt:wordsense-07312221-n-1)
+  (!wn30pt:wordsense-00703875-v-1 !nomlex:event !wn30pt:wordsense-05785508-n-2)
+  (!wn30pt:wordsense-00121046-v-1 !nomlex:event !wn30pt:wordsense-05984584-n-1)
+  (!wn30pt:wordsense-02237782-v-1 !nomlex:event !wn30pt:wordsense-01089778-n-2)
+  (!wn30pt:wordsense-00298067-v-1 !nomlex:event !wn30pt:wordsense-00199707-n-1)
+  (!wn30pt:wordsense-00910973-v-1 !nomlex:event !wn30pt:wordsense-07209965-n-2)
+  (!wn30pt:wordsense-01171183-v-2 !nomlex:event !wn30pt:wordsense-00748515-n-1)
+  (!wn30pt:wordsense-02079933-v-1 !nomlex:event !wn30pt:wordsense-06251781-n-1)
+  (!wn30pt:wordsense-02208903-v-2 !nomlex:event !wn30pt:wordsense-13295657-n-2)
+  (!wn30pt:wordsense-00158503-v-2 !nomlex:event !wn30pt:wordsense-05110185-n-1)
+  (!wn30pt:wordsense-00772967-v-1 !nomlex:event !wn30pt:wordsense-06891022-n-1)
+  (!wn30pt:wordsense-00550117-v-1 !nomlex:event !wn30pt:wordsense-00196084-n-1)
+  (!wn30pt:wordsense-00029630-v-1 !nomlex:event !wn30pt:wordsense-07378059-n-1)
+  (!wn30pt:wordsense-00351963-v-1 !nomlex:event !wn30pt:wordsense-15267536-n-2)
+  (!wn30pt:wordsense-01405044-v-1 !nomlex:event !wn30pt:wordsense-00043902-n-1) 
+  (!wn30pt:wordsense-00118523-v-1 !nomlex:event !wn30pt:wordsense-15133621-n-1)
+  (!wn30pt:wordsense-02641957-v-1 !nomlex:event !wn30pt:wordsense-15272029-n-2) 
+  (!wn30pt:wordsense-02208537-v-2 !nomlex:event !wn30pt:wordsense-13295657-n-2) 
+  (!wn30pt:wordsense-02460619-v-1 !nomlex:event !wn30pt:wordsense-13295657-n-2)
+  (!wn30pt:wordsense-02460199-v-1 !nomlex:event !wn30pt:wordsense-15274863-n-2)
+  (!wn30pt:wordsense-01950798-v-1 !nomlex:event !wn30pt:wordsense-00061290-n-2)
+  (!wn30pt:wordsense-00917772-v-3 !nomlex:event !wn30pt:wordsense-05775407-n-1)
+  (!wn30pt:wordsense-00820976-v-5 !nomlex:event !wn30pt:wordsense-06880249-n-2)
+  (!wn30pt:wordsense-02609764-v-4 !nomlex:event !wn30pt:wordsense-15266911-n-5) 
+  (!wn30pt:wordsense-02561332-v-4 !nomlex:event !wn30pt:wordsense-00631378-n-1) 
+  (!wn30pt:wordsense-00351963-v-2 !nomlex:event !wn30pt:wordsense-15267536-n-1) 
+  (!wn30pt:wordsense-02425913-v-2 !nomlex:event !wn30pt:wordsense-15267536-n-1)
+  (!wn30pt:wordsense-02609764-v-3 !nomlex:event !wn30pt:wordsense-15266911-n-2)
+  (!wn30pt:wordsense-02208903-v-1 !nomlex:event !wn30pt:wordsense-15274863-n-2)))
 
 (defparameter *regular* '("or" "ura" "ção" "mento" "gem" "nte" "cia" "sia" "ada"))
 (defparameter *regressive* '("e" "o" "a"))
@@ -14,18 +56,6 @@
            :engine :sparql-1.1 
            :results-format :lists)))
 
-(defun generate-list-of-morphosemantic-links-to-delete ()
-  (let ((rows (run-query-as-list "morphosemantic-links.sparql"))
-        (cnt 0))
-    (with-open-file (out "/tmp/morphosemantic-links-pt.txt" 
-                         :direction :output :if-exists :supersede)
-      (dolist (rr rows)
-        (destructuring-bind (w1 w2 relation synsetId1 synsetId2 
-                                gloss1 gloss2 s1 s2) rr
-          (incf cnt)
-          (when (member cnt *to-delete*)
-            (format out "~a ~a ~a~%" s1 relation s2)))))))
-
 (defun analyze-suffix (word)
   (dolist (s *regular*)
     (when (alexandria:ends-with-subseq s word)
@@ -36,6 +66,10 @@
   (dolist (s *irregular*)
     (when (alexandria:ends-with-subseq s word)
       (return-from analyze-suffix (values s "IRREGULAR")))))
+
+(defun delete-invalid-pt-morphosemantic-triples ()
+  (dolist (tr *invalid-pt-morphosemantic-triples*)
+    (delete-triples  :s (first tr) :p (second tr) :o (third tr))))
 
 (defun generate-morphosemantic-links-noun-suffix-report ()
   (let ((rows (run-query-as-list "morphosemantic-suffixes.sparql"))
