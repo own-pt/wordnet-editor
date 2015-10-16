@@ -74,18 +74,23 @@
 (defun generate-morphosemantic-links-noun-suffix-report ()
   (let ((rows (run-query-as-list "morphosemantic-suffixes.sparql"))
         (cnt 0))
-    (with-open-file (out "/tmp/morphosemantic-links-suffixes.csv" :direction :output :if-exists :supersede)
+    (with-open-file (out "/tmp/morphosemantic-links-suffixes.csv" 
+                         :direction :output :if-exists :supersede)
       (format out "word1,rel,word2,synset1,synset2,lex. file1, lex. file2, suffix, class~%")
       (dolist (rr rows)
         (destructuring-bind 
-              (w1 relation w2 synset-id1 synset-id2 lex-file1 lex-file2) (mapcar #'upi->value rr)
+              (w1 relation w2 synset-id1 synset-id2 lex-file1 lex-file2) 
+            (mapcar #'upi->value rr)
           (multiple-value-bind (suffix class) (analyze-suffix w2)
-            (format out "~a,~a,~a,~a-v,~a-n,~a,~a,~a,~a~%" w1 relation w2 synset-id1 synset-id2 lex-file1 lex-file2 suffix class)))))))
+            (format out "~a,~a,~a,~a-v,~a-n,~a,~a,~a,~a~%" 
+                    w1 relation w2 synset-id1 synset-id2
+                    lex-file1 lex-file2 suffix class)))))))
 
 (defun generate-morphosemantic-links-pt-report ()
   (let ((rows (run-query-as-list "morphosemantic-links.sparql"))
         (cnt 0))
-    (with-open-file (out "/tmp/morphosemantic-links-pt.html" :direction :output :if-exists :supersede)
+    (with-open-file (out "/tmp/morphosemantic-links-pt.html"
+                         :direction :output :if-exists :supersede)
       (format out "<html><header><META http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\"></header><body><h1>Morphosemantic links PT.</h1><table>")
       (dolist (rr rows)
         (destructuring-bind (w1 w2 relation 
