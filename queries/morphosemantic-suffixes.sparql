@@ -1,18 +1,25 @@
 prefix wn30: <https://w3id.org/own-pt/wn30/schema/>
 prefix nomlex: <https://w3id.org/own-pt/nomlex/schema/>
 
-select ?w1 ?p ?w2 
+select ?w1 ?p ?w2 ?id1 ?id2 ?lf1 ?lf2
 {
   ?ws1 ?p ?ws2 .
   ?p rdfs:subPropertyOf nomlex:morphosemanticLink .
   
-  ?ss1 wn30:containsWordSense ?ws1 .
-  ?ss2 wn30:containsWordSense ?ws2 .
+  ?en1 owl:sameAs ?pt1 ;
+       wn30:lexicographerFile ?lf1 .
+  ?en2 owl:sameAs ?pt2 ;
+       wn30:lexicographerFile ?lf2 .
+
+  ?pt1 wn30:containsWordSense ?ws1 ;
+       wn30:synsetId ?id1 .
+  
+  ?pt2 wn30:containsWordSense ?ws2 ;
+       wn30:synsetId ?id2 .
 
   ?ws1 wn30:word/wn30:lexicalForm ?w1 .
   ?ws2 wn30:word/wn30:lexicalForm ?w2 .
   
-  ?ss1 skos:inScheme <http://logics.emap.fgv.br/wn/> .
-  ?ss2 skos:inScheme <http://logics.emap.fgv.br/wn/> .
+  ?pt1 skos:inScheme <http://logics.emap.fgv.br/wn/> .
+  ?pt2 skos:inScheme <http://logics.emap.fgv.br/wn/> .
 }
-order by ?w1 ?w2

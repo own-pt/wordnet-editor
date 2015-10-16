@@ -2,6 +2,10 @@
 
 (defparameter *to-delete* '(1 2 3))
 
+(defparameter *regular* '("or" "ura" "ção" "mento" "gem" "nte" "cia" "sia" "ada"))
+(defparameter *regressive* '("e" "o" "a"))
+(defparameter *irregular* '("l" "m" "r"))
+
 (defun get-synset-words (query synset)
   (mapcar (lambda (w) (part->value (car w))) 
           (sparql:run-sparql 
@@ -22,15 +26,27 @@
           (when (member cnt *to-delete*)
             (format out "~a ~a ~a~%" s1 relation s2)))))))
 
-(defun generate-morphosemantic-links-suffix-report ()
+(defun analyze-suffix (word)
+  (dolist (s *regular*)
+    (when (alexandria:ends-with-subseq s word)
+      (return-from analyze-suffix (values s "REGULAR"))))
+  (dolist (s *regressive*)
+    (when (alexandria:ends-with-subseq s word)
+      (return-from analyze-suffix (values s "REGRESSIVE"))))
+  (dolist (s *irregular*)
+    (when (alexandria:ends-with-subseq s word)
+      (return-from analyze-suffix (values s "IRREGULAR")))))
+
+(defun generate-morphosemantic-links-noun-suffix-report ()
   (let ((rows (run-query-as-list "morphosemantic-suffixes.sparql"))
         (cnt 0))
-    (with-open-file (out "/tmp/morphosemantic-links-words.csv" :direction :output :if-exists :supersede)
+    (with-open-file (out "/tmp/morphosemantic-links-suffixes.csv" :direction :output :if-exists :supersede)
+      (format out "word1,rel,word2,synset1,synset2,lex. file1, lex. file2, suffix, class~%")
       (dolist (rr rows)
-        (destructuring-bind (w1 relation w2) rr
-          (let ((word1 (upi->value w1))
-                 (word2 (upi->value w2)))
-            (format out "~a, ~a, ~a~%" word1 relation word2)))))))
+        (destructuring-bind 
+              (w1 relation w2 synset-id1 synset-id2 lex-file1 lex-file2) (mapcar #'upi->value rr)
+          (multiple-value-bind (suffix class) (analyze-suffix w2)
+            (format out "~a,~a,~a,~a-v,~a-n,~a,~a,~a,~a~%" w1 relation w2 synset-id1 synset-id2 lex-file1 lex-file2 suffix class)))))))
 
 (defun generate-morphosemantic-links-pt-report ()
   (let ((rows (run-query-as-list "morphosemantic-links.sparql"))
