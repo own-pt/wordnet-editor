@@ -1,8 +1,8 @@
 ;;; these are various functions that were used to clean up the own-pt triplestore
 ;;; that aren't needed anymore; they are retained here if we need to do similar cleanups
 ;;; in the future.
-(in-package :wordnet)
 
+(in-package :wordnet)
 
 ;;; this procedure goes through all the nodes under the default graph
 ;;; and attemps to move them to the proper graphs essentially all
@@ -10,14 +10,15 @@
 ;;; will be moved, along all its related nodes, to the proper graph
 ;;; per the following table:
 
-;;http://logics.emap.fgv.br/wn/ own-pt.nt
-;;https://w3id.org/own-pt/nomlex/ nomlex.nt
-;;https://w3id.org/own-pt/wn30-en/ wordnet-en.nt
-;;https://w3id.org/own-pt/wn30-pt/ own-pt.nt
-;;http://wordnet.princeton.edu/ wordnet-en.nt
+;; http://logics.emap.fgv.br/wn/ own-pt.nt
+;; https://w3id.org/own-pt/nomlex/ nomlex.nt
+;; https://w3id.org/own-pt/wn30-en/ wordnet-en.nt
+;; https://w3id.org/own-pt/wn30-pt/ own-pt.nt
+;; http://wordnet.princeton.edu/ wordnet-en.nt
 
-;; after FIX-DEFAULT-GRAPH is execute, there will remain around 3000 blank nodes
-;; these can be fixed with FIX-REMANING-BLANK-NODES-IN-DEFAULT-GRAPH
+;; after FIX-DEFAULT-GRAPH is execute, there will remain around 3000
+;; blank nodes these can be fixed with
+;; FIX-REMANING-BLANK-NODES-IN-DEFAULT-GRAPH
 
 (defun move-to-graph (node graph)
   (dolist (tr (get-triples-list :g (default-graph-upi *db*) :s node))
