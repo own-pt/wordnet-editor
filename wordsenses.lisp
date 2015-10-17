@@ -23,40 +23,26 @@
 ;;; first place, it doesn't matter for these methods the final order
 ;;; of the words.
 
-(defun make-wordsense-id (synset prefix n)
-  (labels ((synset-type (synset)
-	     (object (get-triple :s synset :p !rdf:type)))
-	   (synset-id (synset)
-	     (upi->value (object (get-triple :s synset :p !wn30:synsetId))))
-	   (type-suffix (type)
-	     (upi->value (object (get-triple :s type :p !wn30:suffixCode))))
-	   (encode-synset (s)
-	     (format nil "~a-~a"
-		     (synset-id synset)
-		     (type-suffix (synset-type synset)))))
-    (upi (resource 
-	  (format nil "~a-~a-~a" prefix (encode-synset synset) n)
-	  "wn30pt"))))
+(defun make-new-wordsense-id (synset)
+  (labels ((new-part (synset n)
+	     (resource (cl-ppcre:regex-replace "synset-([0-9]{8}-[anvs])"
+					       (upi->value synset)
+					       (format nil "wordsense-\\1-~a" n)))))
+    (let ((senses (get-wordsenses synset)))
+      (do* ((next 1 (1+ next))
+	    (res (new-part synset next)
+		 (new-part synset next)))
+	   ((not (member res senses :test #'part=))
+	    res)))))
 
-(defun process-wordsense (synset blank prefix n)
-  (merge-nodes blank (make-wordsense-id synset prefix n)))
 
-(defun process-wordsenses (synset objects prefix n)
-  (when objects
-    (progn
-      (process-wordsense synset (car objects) prefix n)
-      (process-wordsenses synset (cdr objects) prefix (1+ n)))))
- 
 (defun get-wordsenses (synset)
   (mapcar #'object (get-triples-list :s synset :p !wn30:containsWordSense)))
+
 
 (defun process-all-blank-wordsenses ()
   (let ((table (mapcar #'car (run-query-as-list "wordsenses-with-blank-nodes.sparql"))))
     (dolist (s table)
-      (process-wordsenses s (get-wordsenses s) "tmp-wordsense" 1))))
-
-(defun rename-wordsenses ()
-  (let ((table (mapcar #'car (run-query-as-list "wordsenses-without-blank-nodes.sparql"))))
-    (dolist (s table)
-      (process-wordsenses s (get-wordsenses s) "wordsense" 1))))
-
+      (dolist (sense (get-wordsenses s))
+	(if (blank-node-p sense)
+	    (merge-nodes sense (make-new-wordsense-id s)))))))

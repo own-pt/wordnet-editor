@@ -1,6 +1,6 @@
 select distinct ?x
-   {
-     ?x skos:inScheme <http://logics.emap.fgv.br/wn/>;
-        wn30:containsWordSense ?ws
-     filter(isBlank(?ws))
-   }
+{
+  ?x skos:inScheme <http://logics.emap.fgv.br/wn/>;
+     wn30:containsWordSense ?ws
+  filter(isBlank(?ws))
+}
