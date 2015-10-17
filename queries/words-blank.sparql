@@ -1,8 +1,0 @@
-select distinct ?x ?lf
-{
-  ?ss wn30:containsWordSense/wn30:word ?x ;
-      skos:inScheme <http://logics.emap.fgv.br/wn/> .
-  ?x a wn30:Word ;
-     wn30:lexicalForm ?lf .
-  filter(isBlank(?x))
-}

@@ -17,8 +17,7 @@
 (defun get-wordsenses (synset)
   (mapcar #'object (get-triples-list :s synset :p !wn30:containsWordSense)))
 
-
-(defun process-all-blank-wordsenses ()
+(defun rename-all-blank-wordsenses ()
   (let ((table (mapcar #'car (run-query-as-list "wordsenses-with-blank-nodes.sparql"))))
     (dolist (s table)
       (dolist (sense (get-wordsenses s))
