@@ -17,5 +17,6 @@
 	       (:file "couchdb"       :depends-on ("solr"))
 	       (:file "deduplication" :depends-on ("utils"))
 	       (:file "suggestions"   :depends-on ("backend"))
-	       (:file "rename-wordsenses" :depends-on ("backend"))
-	       (:file "nomlex-rdf"        :depends-on ("backend"))))
+	       (:file "wordsenses"    :depends-on ("backend"))
+	       (:file "words"         :depends-on ("backend"))
+	       (:file "nomlex-rdf"    :depends-on ("backend"))))

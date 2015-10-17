@@ -204,10 +204,4 @@
        `(remove-nomlex :noun ,noun :verb ,verb))
       (t (error "I don't know this command")))))
 
-;; working with words
 
-(defun get-words (synset &key (ns "wn30pt")) 
-  (let ((result (run-query-as-list "words-blank.sparql")))
-    (dolist (w result)
-      (let ((uri (resource (format nil "word-~a" (replace-regexp (cadr result) "[ ]+" "_")) ns)))
-	(merge-nodes (car result) uri)))))
