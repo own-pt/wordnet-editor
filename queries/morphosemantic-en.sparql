@@ -1,0 +1,15 @@
+prefix wn30: <https://w3id.org/own-pt/wn30/schema/>
+prefix nomlex: <https://w3id.org/own-pt/nomlex/schema/>
+
+select ?ws1 ?p ?ws2
+{
+  ?ws1 ?p ?ws2 .
+  ?p rdfs:subPropertyOf nomlex:morphosemanticLink .
+  
+  ?ptss1 wn30:containsWordSense ?ws1 .
+  ?ptss2 wn30:containsWordSense ?ws2 .
+  
+  ?ptss1 skos:inScheme <http://wordnet.princeton.edu/> .
+  ?ptss2 skos:inScheme <http://wordnet.princeton.edu/> .
+ 
+}
