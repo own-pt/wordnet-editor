@@ -5,11 +5,10 @@
 ;; For info why the dependencies file is necessary, read
 ;; http://weitz.de/packages.html
 
-(asdf:defsystem #:wordnet
+(asdf:defsystem #:wordnet-editor
   :serial t
   :depends-on (:agclient :cl-ppcre :fare-csv :solr :alexandria :chillax :yason)
-  :components ((:file "dependencies") 
-	       (:file "packages"      :depends-on ("dependencies"))
+  :components ((:file "packages")
 	       (:file "ag-init"       :depends-on ("packages"))
 	       (:file "utils"         :depends-on ("packages"))
 	       (:file "omw"           :depends-on ("utils"))
@@ -18,5 +17,5 @@
 	       (:file "couchdb"       :depends-on ("solr"))
 	       (:file "deduplication" :depends-on ("utils"))
 	       (:file "suggestions"   :depends-on ("backend"))
-	       (:file "server"        :depends-on ("backend"))
-	       (:file "nomlex-rdf"    :depends-on ("backend"))))
+	       (:file "rename-wordsenses" :depends-on ("backend"))
+	       (:file "nomlex-rdf"        :depends-on ("backend"))))
