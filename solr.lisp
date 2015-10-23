@@ -1,6 +1,9 @@
 
 (in-package :wordnet)
 
+(defparameter *solr* (make-instance 'solr:solr :uri "http://localhost:8983/solr/wn"))
+(defparameter *solr-pointers* (make-instance 'solr:solr :uri "http://localhost:8983/solr/pointers"))
+
 (defun synset-to-alist (addr &key (suffix "en") (data nil) (plan nil))
   (labels ((tostr (apart regex replacement)
 	     (multiple-value-bind (val type extra)
