@@ -1,0 +1,5 @@
+select ?a
+{
+  ?a a wn30:Word .
+  filter not exists { ?b ?pin ?a }
+}

@@ -4,22 +4,20 @@
   (with-open-file (output file  
                           :direction :output  
                           :if-does-not-exist :create  
-                          :if-exists :error)  
+                          :if-exists :supersede)  
     (print-triples triples  
                    :limit nil :stream output :format :ntriple)))
 
-(defun export-all-old ()
-  (export-triples (get-triples :g (default-graph-upi *db*)) "/tmp/e/default-graph.nt")
-  (export-triples (get-triples :g !old-source:nomlex-pt.rdf.gz) "/tmp/e/nomlex.nt")
-  (export-triples (get-triples :g !old-source:wnlite.turtle) "/tmp/e/wnlite.nt")
-  (export-triples (get-triples :g !old-source:wordnet-en.ntriples.gz) "/tmp/e/wordnet-en.nt")
-  (export-triples (get-triples :g !old-source:openWordnet-PT.rdf.gz) "/tmp/e/own-pt.nt"))
+(defun get-triples-from-list (list)
+  (mapcar (lambda (x) (get-triple :s (first x) :p (second x) :o (third x))) list))
 
-  
 (defun export-all ()
-  (export-triples (get-triples :g !source:wn30.ttl) "/tmp/e/wn30.nt")
-  (export-triples (get-triples :g !source:morphosemantic-links.xlsx) "/tmp/e/morphosemantic-links.nt")
-  (export-triples (get-triples :g !source:own-pt.nt) "/tmp/e/own-pt.nt")
-  (export-triples (get-triples :g !source:wordnet-en.nt) "/tmp/e/wordnet-en.nt"))
+  (export-triples (get-triples :g !source:wn30.ttl) "/tmp/wn30.nt")
+  (export-triples (get-triples-from-list (run-query-as-list "morphosemantic-en.sparql"))
+                  "/tmp/morphosemantic-links-en.nt")
+  (export-triples (get-triples-from-list (run-query-as-list "morphosemantic-pt.sparql"))
+                  "/tmp/morphosemantic-links-pt.nt")
+  (export-triples (get-triples :g !source:own-pt.nt) "/tmp/own-pt.nt")
+  (export-triples (get-triples :g !source:wordnet-en.nt) "/tmp/wordnet-en.nt"))
 
   

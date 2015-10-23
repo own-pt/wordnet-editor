@@ -1,7 +1,10 @@
 
 (in-package :wordnet)
 
-(defvar *package-dir* (pathname-directory (asdf:system-definition-pathname (asdf:find-system :wordnet))))
+(defvar *package-dir* (pathname-directory
+		       (asdf:system-definition-pathname
+			(asdf:find-system :wordnet-editor))))
+
 (defvar *queries-dir* (append *package-dir* (list "queries")))
 
 (defun file-string (path)
