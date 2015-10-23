@@ -1,0 +1,10 @@
+select ?a ?p ?b
+{
+  ?a ?p ?b .
+  ?a a ?synsetType1 .
+  ?b a ?synsetType2 .
+  ?synsetType1 rdfs:subClassOf wn30:Synset .
+  ?synsetType2 rdfs:subClassOf wn30:Synset .
+  
+  filter (?p != owl:sameAs) .
+}

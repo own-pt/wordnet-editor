@@ -83,7 +83,6 @@
 		  current 0
 		  block-tmp nil))))))
 
-
 (defun load-synsets-solr (blocksize)
   (let* ((current 0) 
 	 (total 0)
@@ -106,5 +105,38 @@
 		    block-tmp nil)))))
     (solr:solr-add* *solr* block-tmp :commit t)))
 
+(defun link-to-alist (params &key type)
+  (case type 
+    (:synset
+       (pairlis '(:source_synset :pointer :target_synset)
+                (mapcar #'part->value params)))
+    (:wordsense
+       (pairlis '(:source_synset :source_word :pointer :target_synset :target_word)
+                (mapcar #'part->value params)))
+    (:nomlex
+        (pairlis '(:source_word :pointer :target_word)
+                 (mapcar #'part->value params)))))
 
+(defun load-pointers (blocksize)
+  (let* ((current 0) 
+	 (total 0)
+	 (block-tmp nil)
+         (queries (pairlis '(:synset :wordsense :nomlex) 
+                           '("all-synset-links.sparql" "all-wordsense-links.sparql" "all-nomlex-links.sparql"))))
+    (dolist (q queries)
+      (let ((result (sparql:run-sparql 
+                     (sparql:parse-sparql (query-string (cdr q))
+                                          (alexandria:alist-hash-table (collect-namespaces)))
+                     :results-format :lists)))
+        (dolist (l result)
+          (format *debug-io* "Processing (~{~a~^,~}) [~a/~a ~a]~%"  l current blocksize total)
+          (push (link-to-alist l :type (car q)) block-tmp)
+          (setf current (1+ current))
+          (if (> current blocksize)
+              (progn
+                (solr:solr-add* *solr-pointers* block-tmp :commit t)
+                (setf total (+ total current)
+                      current 0
+                      block-tmp nil))))
+        (solr:solr-add* *solr-pointers* block-tmp :commit t)))))
 

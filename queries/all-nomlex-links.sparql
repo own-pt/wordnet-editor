@@ -1,0 +1,29 @@
+select distinct ?lf1 ?c ?lf2
+where 
+{
+  {
+    ?n a ?c .
+    ?n nomlex:noun ?a .
+    ?n nomlex:verb ?b .
+    
+    ?a a wn30:Word .
+    ?b a wn30:Word .
+    
+    ?a wn30:lexicalForm ?lf1 .
+    ?b wn30:lexicalForm ?lf2 .
+  }
+  
+  union
+  
+  {
+    ?n a ?c .
+    ?n nomlex:noun ?b .
+    ?n nomlex:verb ?a .
+    
+    ?a a wn30:Word .
+    ?b a wn30:Word .
+    
+    ?a wn30:lexicalForm ?lf1 .
+    ?b wn30:lexicalForm ?lf2 .
+  }
+}

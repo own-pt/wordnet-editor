@@ -1,0 +1,13 @@
+select ?s1 ?l1 ?p ?s2 ?l2
+{
+  ?a ?p ?b .
+
+  ?a a wn30:WordSense .
+  ?b a wn30:WordSense .
+
+  ?a wn30:word/wn30:lexicalForm ?l1 .
+  ?b wn30:word/wn30:lexicalForm ?l2 .
+  
+  ?s1 wn30:containsWordSense ?a .
+  ?s2 wn30:containsWordSense ?b .
+}

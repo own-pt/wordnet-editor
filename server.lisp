@@ -5,7 +5,8 @@
 			     (asdf:system-definition-pathname 
 			      (asdf:find-system :wordnet))))
 
-(defparameter *solr* (make-instance 'solr:solr :uri "http://localhost:8983/solr"))
+(defparameter *solr* (make-instance 'solr:solr :uri "http://localhost:8983/solr/wn"))
+(defparameter *solr-pointers* (make-instance 'solr:solr :uri "http://localhost:8983/solr/pointers"))
 
 (webaction-project "wordnet"
 		   :destination "site/"
