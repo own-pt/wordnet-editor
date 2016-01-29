@@ -4,6 +4,8 @@
 (defparameter *solr* (make-instance 'solr:solr :uri "http://localhost:8983/solr/wn"))
 (defparameter *solr-pointers* (make-instance 'solr:solr :uri "http://localhost:8983/solr/pointers"))
 
+(defparameter *debug-load-pointers* nil)
+
 (defun synset-to-alist (addr &key (suffix "en") (data nil) (plan nil))
   (labels ((tostr (apart regex replacement)
 	     (multiple-value-bind (val type extra)
@@ -132,7 +134,7 @@
                                           (alexandria:alist-hash-table (collect-namespaces)))
                      :results-format :lists)))
         (dolist (l result)
-          (format *debug-io* "Processing (~{~a~^,~}) [~a/~a ~a]~%"  l current blocksize total)
+          (when *debug-load-pointers* (format *debug-io* "Processing (~{~a~^,~}) [~a/~a ~a]~%"  l current blocksize total))
           (push (link-to-alist l :type (car q)) block-tmp)
           (setf current (1+ current))
           (if (> current blocksize)
