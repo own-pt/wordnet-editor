@@ -3,7 +3,7 @@
 
 (defun make-new-wordsense-id (synset)
   (labels ((new-part (synset n)
-	     (resource (cl-ppcre:regex-replace "synset-([0-9]{8}-[anvs])"
+	     (resource (cl-ppcre:regex-replace "synset-([0-9]{8}-[anvr])"
 					       (upi->value synset)
 					       (format nil "wordsense-\\1-~a" n)))))
     (let ((senses (get-wordsenses synset)))
@@ -18,7 +18,9 @@
   (mapcar #'object (get-triples-list :s synset :p !wn30:containsWordSense)))
 
 (defun rename-all-blank-wordsenses ()
-  (let ((table (mapcar #'car (run-query-as-list "wordsenses-with-blank-nodes.sparql"))))
+  (let* ((table (mapcar #'car (run-query-as-list "wordsenses-with-blank-nodes.sparql")))
+         (count 0)
+         (len (length table)))
     (dolist (s table)
       (dolist (sense (get-wordsenses s))
 	(if (blank-node-p sense)
