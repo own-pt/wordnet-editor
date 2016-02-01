@@ -1,0 +1,55 @@
+delete
+{ 
+  ?ws1 rdf:type ?t .
+  ?ws1 rdfs:label ?l .
+  ?ws1 wn30:word ?w .
+  ?a wn30:containsWordSense ?ws1 .
+}
+where
+{
+  ?a wn30:containsWordSense ?ws1 .
+  ?a wn30:containsWordSense ?ws2 .
+  ?ws1 wn30:word ?w .
+  ?ws2 wn30:word ?w .  
+  ?ws1 rdf:type ?t .
+  ?ws1 rdfs:label ?l .
+  
+  filter (?ws1 < ?ws2 ) .
+  
+  filter not exists {
+    ?ws1 ?r ?x .
+    filter  ( ?r not in (rdf:type, rdfs:label, wn30:word) ) .
+  }
+  filter not exists {
+    ?y ?r ?ws1  .
+     filter  ( ?r not in (wn30:containsWordSense) ) .
+  }
+}
+
+delete
+{ 
+  ?ws1 rdf:type ?t .
+  ?ws1 rdfs:label ?l .
+  ?ws1 wn30:word ?w .
+  ?a wn30:containsWordSense ?ws1 .
+}
+where
+{
+  ?a wn30:containsWordSense ?ws1 .
+  ?a wn30:containsWordSense ?ws2 .
+  ?ws1 wn30:word ?w .
+  ?ws2 wn30:word ?w .  
+  ?ws1 rdf:type ?t .
+  ?ws1 rdfs:label ?l .
+  
+  filter (?ws1 > ?ws2 ) .
+  
+  filter not exists {
+    ?ws1 ?r ?x .
+    filter  ( ?r not in (rdf:type, rdfs:label, wn30:word) ) .
+  }
+  filter not exists {
+    ?y ?r ?ws1  .
+     filter  ( ?r not in (wn30:containsWordSense) ) .
+  }
+}
