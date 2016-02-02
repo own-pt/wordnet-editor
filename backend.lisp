@@ -36,9 +36,10 @@
 
 (defun synset-has-word? (synset a-form)
   (select0-distinct ?ws
-    (q- ?w  !wn30:lexicalForm (?? (literal a-form :language "pt")))
+    (q- (?? synset) !wn30:containsWordSense ?ws)
     (q- ?ws !wn30:word ?w)
-    (q- (?? synset) !wn30:containsWordSense ?ws)))
+    (q- ?w  !wn30:lexicalForm (?? (literal a-form :language "pt")))))
+
 
 (defun remove-word (a-form &key (synset nil) (debug nil))
   (let ((vars `((?lf . ,(literal a-form :language "pt"))))
