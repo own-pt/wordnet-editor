@@ -7,6 +7,9 @@
 
 (defvar *queries-dir* (append *package-dir* (list "queries")))
 
+(defun clean-up-word (str)
+  (cl-ppcre:regex-replace-all "[^\\w]" str "_"))
+
 (defun file-string (path)
   (with-open-file (stream path)
     (let ((data (make-string (file-length stream))))

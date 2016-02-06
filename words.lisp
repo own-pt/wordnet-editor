@@ -12,9 +12,6 @@
         (process-word old lf ns (1+ n))
         (merge-nodes old uri))))
 
-(defun clean-up-word (str)
-  (cl-ppcre:regex-replace-all "[^\\w]" str "_"))
-
 (defun rename-all-blank-pt-words (&key (ns "wn30pt"))
   (let ((result (run-query-as-list "pt-blank-words.sparql")))
     (dolist (w result)

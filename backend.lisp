@@ -40,7 +40,6 @@
     (q- ?ws !wn30:word ?w)
     (q- ?w  !wn30:lexicalForm (?? (literal a-form :language "pt")))))
 
-
 (defun remove-word (a-form &key (synset nil) (debug nil))
   (let ((vars `((?lf . ,(literal a-form :language "pt"))))
 	(marked nil))
@@ -63,13 +62,16 @@
 	      (format *debug-io* "Del ~s~%" m))
 	  (delete-triple (triple-id m)))))))
 
+(defun make-word-iri (a-form)
+  (clean-up-word (format nil "word-~a" a-form)))
+
 (defun add-word (a-form &key (ns "wn30pt"))
   (let* ((lit (literal a-form :language "pt"))
 	 (words (select0-distinct ?w 
 		  (q- ?w !rdf:type !wn30:Word)
 		  (q- ?w !wn30:lexicalForm (?? lit)))))
     (or (car words)
-	(let* ((uri (format nil "word-~a" (replace-regexp a-form "[ ]+" "_")))
+	(let* ((uri (make-word-iri a-form))
 	       (res (resource uri ns)))
 	  (add-triple res !rdf:type !wn30:Word :g *own-pt-source*) 
 	  (add-triple res !wn30:lexicalForm lit :g *own-pt-source*)
