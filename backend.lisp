@@ -62,8 +62,8 @@
 	      (format *debug-io* "Del ~s~%" m))
 	  (delete-triple (triple-id m)))))))
 
-(defun make-word-iri (a-form)
-  (clean-up-word (format nil "word-~a" a-form)))
+(defun make-unique-word-iri (a-form ks)
+  (resource (clean-up-word (format nil "word-~a" a-form)) ns))
 
 (defun add-word (a-form &key (ns "wn30pt"))
   (let* ((lit (literal a-form :language "pt"))
@@ -71,8 +71,7 @@
 		  (q- ?w !rdf:type !wn30:Word)
 		  (q- ?w !wn30:lexicalForm (?? lit)))))
     (or (car words)
-	(let* ((uri (make-word-iri a-form))
-	       (res (resource uri ns)))
+	(let ((res (make-unique-word-iri a-form ns)))
 	  (add-triple res !rdf:type !wn30:Word :g *own-pt-source*) 
 	  (add-triple res !wn30:lexicalForm lit :g *own-pt-source*)
 	  res))))
