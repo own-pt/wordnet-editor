@@ -62,8 +62,17 @@
 	      (format *debug-io* "Del ~s~%" m))
 	  (delete-triple (triple-id m)))))))
 
-(defun make-unique-word-iri (a-form ks)
-  (resource (clean-up-word (format nil "word-~a" a-form)) ns))
+(defun make-unique-iri (basename ns n)
+  (let ((uri (resource 
+              (if (> n 0)
+                  (format nil "~a-~a" basename n)
+                  (format nil "~a" basename)) ns)))
+    (if (or (get-triples-list :s uri) (get-triples-list :o uri))
+        (make-unique-iri basename ns (1+ n))
+        uri)))
+
+(defun make-unique-word-iri (a-form ns)
+  (make-unique-iri (format nil "word-~a" (clean-up-word a-form)) ns 0))
 
 (defun add-word (a-form &key (ns "wn30pt"))
   (let* ((lit (literal a-form :language "pt"))
