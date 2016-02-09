@@ -35,10 +35,14 @@
   (get-triples-list :s synset :p !wn30:synsetId))
 
 (defun synset-has-word? (synset a-form)
-  (select0-distinct ?ws
-    (q- (?? synset) !wn30:containsWordSense ?ws)
-    (q- ?ws !wn30:word ?w)
-    (q- ?w  !wn30:lexicalForm (?? (literal a-form :language "pt")))))
+  (let ((synset-1 (db.agraph::coerce-to-upi synset))
+        (a-form-1 (db.agraph::coerce-to-upi (literal a-form :language "pt"))))
+    (unless (and synset-1 a-form)
+      (error "Unable to convert arguments to UPIs"))
+    (select0-distinct ?ws
+      (q- ?w  !wn30:lexicalForm (?? a-form-1))
+      (q- ?ws !wn30:word ?w)
+      (q- (?? synset-1) !wn30:containsWordSense ?ws))))
 
 (defun remove-word (a-form &key (synset nil) (debug nil))
   (let ((vars `((?lf . ,(literal a-form :language "pt"))))
