@@ -36,7 +36,7 @@
     (at vote !prov:wasAttributedTo (get-value :user doc))
     (at vote !prov:generatedAtTime (get-value :date doc))
     (at vote !app-s:value          (get-value :value doc))
-    (at vote !app-s:subject        (res "suggestion-~a" :suggestion doc))))
+    (at vote !app-s:subject        (res "suggestion-~a" :suggestion_id doc))))
 
 
 (defun add-suggestion (doc)
@@ -57,42 +57,8 @@
     (at suggestion !prov:wasAttributedTo (or (get-value :user doc) "unknown"))))
 
 
+;; to run open the triple store and execute both commands
 
 ;; (open-triple-store ...)
 ;; (mapcar #'add-suggestion (get-solr-docs "type:suggestion" *suggestions* :rows 126000))
-
-
-(defun populate-triples (&key (rows 2)
-			      (start 0) 
-			      (solr-repository *solr-suggestions*)
-			      (output-function #'generate-suggestion))
-  (loop for i in (get-docs-list :rows rows :start start :solr-repository solr-repository) do
-	(funcall output-function i)))
-
-(defun main ()
-  (labels ((loop-documents (size &key (step 1000)
-				 (start 0)
-				 (solr-repository *solr-suggestions*)
-				 (output-function #'generate-suggestion))
-	    (if (>= step size)
-		(progn
-		  (populate-triples :rows size 
-				    :start start 
-				    :solr-repository solr-repository
-				    :output-function output-function)
-		  (commit-triple-store))
-		(progn
-		  (populate-triples :rows step :start start   :solr-repository solr-repository
-				    :output-function output-function)
-		  (commit-triple-store)
-		  (loop-documents (- size step) :start (+ start step)
-		   :solr-repository solr-repository
-		   :output-function output-function)))))
-    (let ((number-suggestions (cdr (assoc ':NUM-FOUND (cdr (get-response)))))
-	  (number-votes (cdr (assoc ':NUM-FOUND
-				    (cdr (get-response 
-					  :solr-repository *solr-votes*))))))
-      (loop-documents number-suggestions)
-      (loop-documents number-votes :solr-repository *solr-votes* 
-	    :output-function #'generate-vote))))
- 
+;; (mapcar #'add-vote (get-solr-docs "*:*" *votes* :rows 8300))
