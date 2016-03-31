@@ -16,4 +16,10 @@
 (register-namespace "nomlex" "https://w3id.org/own-pt/nomlex/schema/" :errorp nil)
 (register-namespace "nm-pt"  "https://w3id.org/own-pt/nomlex/instances/" :errorp nil)
 (register-namespace "skos"   "http://www.w3.org/2004/02/skos/core#" :errorp nil)
+(register-namespace "prov"   "http://www.w3.org/ns/prov#" :errorp nil)
+(register-namespace "rdfs"   "http://www.w3.org/2000/01/rdf-schema#" :errorp nil) 
+
+(register-namespace "app-s"  "https://w3id.org/own-pt/app/schema/"    :errorp nil) 
+(register-namespace "app-i"  "https://w3id.org/own-pt/app/instances/" :errorp nil)
+
 (register-namespace "source" "file://")

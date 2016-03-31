@@ -1,51 +1,66 @@
-(ql:quickload :solr)
-(ql:quickload :cl-json)
-(load "agraph.fasl")
- 
-(defpackage :my-app
-  (:use :common-lisp :solr :cl-json :db.agraph.user))
 
-(in-package :my-app)
+(in-package :solr-to-ag)
 
-(db.agraph.user::enable-!-reader)
-(db.agraph.user::enable-print-decoded t) 
-(db.agraph.user::create-triple-store "version1"  
-  :triple-store-class 'db.agraph.user::remote-triple-store  
-  :server "logics.emap.fgv.br"  
-  ;  :catalog "my-catalog" ;; uncomment and use an existing catalog name  
-                           ;; if desired  
-  :port 10035 :user "rafael" :password "rafael2016")
 
-(db.agraph.user::register-namespace "prov" "http://www.w3.org/ns/prov#"  
-   :errorp nil) 
-(db.agraph.user::register-namespace "wn30" "https://w3id.org/own-pt/wn30/schema/"  
-   :errorp nil) 
-(db.agraph.user::register-namespace "wn30pt" "https://w3id.org/own-pt/wn30-pt/instances/"  
-   :errorp nil) 
-(db.agraph.user::register-namespace "rdfs" "http://www.w3.org/2000/01/rdf-schema#"  
-   :errorp nil) 
-(db.agraph.user::register-namespace "own-pt-api-s" "http://example.org/"  
-   :errorp nil) 
-(db.agraph.user::register-namespace "own-pt-api-v" "http://example2.org/"  
-   :errorp nil) 
+(defvar *suggestions* (make-instance 'solr:solr :uri "http://localhost:8983/solr/suggestions"))
+(defvar *votes*       (make-instance 'solr:solr :uri "http://localhost:8983/solr/votes"))
 
-(defvar *solr-suggestions* (make-instance 'solr :uri "http://localhost:8983/solr/suggestions"))
-(defvar *solr-votes* (make-instance 'solr :uri "http://localhost:8983/solr/votes"))
+(defun get-solr-docs (query solr-repository &key (rows 10) (start 0))
+  (let ((response (solr:solr-query solr-repository
+				   :query query
+				   :param-alist `(("rows" . ,rows) 
+						  ("start" . ,start)))))
+    (multiple-value-bind (a b c)
+	(solr:solr-result->response-count response)
+      (values (solr:solr-result->doc-alist response) (list a b c)))))
 
-(defun get-data (&key (rows 2) (start 0) (solr-repository *solr-suggestions*))
-    (with-input-from-string
-	(s 
-	 (solr-query solr-repository 
-		     :param-alist `(("wt" . "json") 
-				    ("rows" . ,rows) 
-				    ("start" . ,start))))
-      (json:decode-json s)))
 
-(defun get-response (&key (rows 2) (start 0) (solr-repository *solr-suggestions*))
-  (assoc ':RESPONSE (get-data :rows rows :start start :solr-repository solr-repository)))
+(defun at (s p o)
+  (add-triple s p (typecase o
+		    (string (literal o))
+		    (number (literal (write-to-string o)))
+		    (t o))
+	      :g !<https://w3id.org/own-pt/app/>))
 
-(defun get-docs-list (&key (rows 2) (start 0) (solr-repository *solr-suggestions*))
-  (cdadddr (get-response :rows rows :start start :solr-repository solr-repository)))
+(defun res (string-fmt field doc &key (ns "app-i"))
+  (resource (format nil string-fmt (get-value field doc)) ns))
+
+
+(defun get-value (field doc)
+  (cdr (assoc field doc)))
+
+
+(defun add-vote (doc)
+  (let ((vote  (res "vote-~a" :id doc)))
+    (at vote !rdf:type             !app-s:Vote)
+    (at vote !prov:wasAttributedTo (get-value :user doc))
+    (at vote !prov:generatedAtTime (get-value :date doc))
+    (at vote !app-s:value          (get-value :value doc))
+    (at vote !app-s:subject        (res "suggestion-~a" :suggestion doc))))
+
+
+(defun add-suggestion (doc)
+  (assert (and (equal (get-value :doc_type doc) "synset")
+	       (equal (get-value :type doc) "suggestion")))
+  (let ((suggestion  (res "suggestion-~a" :id doc))
+	(action (format nil "~{~a~^-~}"
+			(subseq (cl-ppcre:split "-" (get-value :action doc)) 0 2))))
+    (at suggestion !rdf:type !app-s:Suggestion)
+    (at suggestion !app-s:action         action)
+    (at suggestion !app-s:param          (get-value :params doc))
+    (at suggestion !app-s:status         (get-value :status doc))
+    (at suggestion !app-s:voteSum        (get-value :sum_votes doc))
+    (at suggestion !app-s:voteScore      (get-value :vote_score doc))
+    (at suggestion !prov:generatedAtTime (get-value :date doc))    
+    (at suggestion !app-s:subject        (res "synset-~a" :doc_id doc :ns "wn30pt"))
+    (at suggestion !app-s:prov           (get-value :provenance doc))
+    (at suggestion !prov:wasAttributedTo (or (get-value :user doc) "unknown"))))
+
+
+
+;; (open-triple-store ...)
+;; (mapcar #'add-suggestion (get-solr-docs "type:suggestion" *suggestions* :rows 126000))
+
 
 (defun populate-triples (&key (rows 2)
 			      (start 0) 
@@ -54,103 +69,30 @@
   (loop for i in (get-docs-list :rows rows :start start :solr-repository solr-repository) do
 	(funcall output-function i)))
 
-(defun generate-vote (doc)
-  (let*((vote  (db.agraph.user::literal 
-		      (concatenate 'string "vote" (cdr (assoc ':ID doc)))))
-	(type !prov:Entity)
-	(user (db.agraph.user::literal
-	       (cdr (assoc ':USER doc))))
-	(date (db.agraph.user::literal 
-	       (write-to-string (cdr (assoc ':DATE doc)))))
-	(value (db.agraph.user::literal 
-		(write-to-string (cdr (assoc ':VALUE doc)))))
-	(subject (db.agraph.user::literal 
-		  (concatenate 'string "suggestion"
-		    (cdr (assoc ':SUGGESTION--ID doc))))))
-    (db.agraph:add-triple vote !rdf:type type)
-    (db.agraph.user::add-triple vote !prov:wasAttributedTo user)
-    (db.agraph.user::add-triple vote !prov:generatedAtTime date)
-    (db.agraph.user::add-triple vote !own-pt-api-v:value value)
-    (db.agraph.user::add-triple vote !own-pt-api-v:subject subject)))
-  
-
-(defun generate-suggestion (doc)
-  (let*((suggestion  (db.agraph.user::literal 
-		      (concatenate 'string "suggestion" (cdr (assoc ':ID doc)))))
-	(type !prov:Entity)
-	(action (db.agraph.user::literal 
-		 (cdr (assoc ':ACTION doc))))
-	(user (db.agraph.user::literal
-	       (if (null (assoc ':USxER doc))
-		   "Lost"
-		 (cdr (assoc ':USER doc)))))
-	(date (db.agraph.user::literal 
-	       (write-to-string (cdr (assoc ':DATE doc)))))
-	(value (db.agraph.user::literal 
-		(cdr (assoc ':PARAMS doc))))
-	(subject (db.agraph.user::resource 
-		  (concatenate 'string
-		    "https://w3id.org/own-pt/wn30/schema/" "synset-"
-		    (cdr (assoc ':DOC--ID doc)))))
-	(sum-votes (db.agraph.user::literal 
-		    (write-to-string (cdr (assoc ':SUM--VOTES doc)))))
-	(vote-score (db.agraph.user::literal 
-		     (write-to-string (cdr (assoc ':VOTE--SCORE doc))))))
-    (db.agraph.user::add-triple suggestion !rdf:type type)
-    (db.agraph.user::add-triple suggestion !prov:wasAttributedTo user)
-    (db.agraph.user::add-triple suggestion !prov:generatedAtTime date)
-    (db.agraph.user::add-triple suggestion !own-pt-api-v:value value)
-    (db.agraph.user::add-triple suggestion !own-pt-api-v:action action)
-    (db.agraph.user::add-triple suggestion !own-pt-api-v:subject subject)
-    (db.agraph.user::add-triple suggestion !own-pt-api-v:sumVotes sum-votes)
-    (db.agraph.user::add-triple suggestion !own-pt-api-v:voteScore vote-score)))
-    
-    
-    
 (defun main ()
   (labels ((loop-documents (size &key (step 1000)
-				      (start 0)
-				      (solr-repository *solr-suggestions*)
-				      (output-function #'generate-suggestion))
-	     (if (>= step size)
-		 (progn
-		   (populate-triples :rows size 
-				     :start start 
-				     :solr-repository solr-repository
-				     :output-function output-function)
-		   (db.agraph.user::commit-triple-store))
-	       (progn
+				 (start 0)
+				 (solr-repository *solr-suggestions*)
+				 (output-function #'generate-suggestion))
+	    (if (>= step size)
+		(progn
+		  (populate-triples :rows size 
+				    :start start 
+				    :solr-repository solr-repository
+				    :output-function output-function)
+		  (commit-triple-store))
+		(progn
 		  (populate-triples :rows step :start start   :solr-repository solr-repository
 				    :output-function output-function)
-		  (db.agraph.user::commit-triple-store)
+		  (commit-triple-store)
 		  (loop-documents (- size step) :start (+ start step)
-							  :solr-repository solr-repository
-				   :output-function output-function)))))
-    (let*((number-suggestions 
-	   (cdr (assoc ':NUM-FOUND (cdr (get-response)))))
-	  (number-votes
-	   (cdr (assoc ':NUM-FOUND
-		       (cdr (get-response 
-			     :solr-repository *solr-votes*))))))
+		   :solr-repository solr-repository
+		   :output-function output-function)))))
+    (let ((number-suggestions (cdr (assoc ':NUM-FOUND (cdr (get-response)))))
+	  (number-votes (cdr (assoc ':NUM-FOUND
+				    (cdr (get-response 
+					  :solr-repository *solr-votes*))))))
       (loop-documents number-suggestions)
       (loop-documents number-votes :solr-repository *solr-votes* 
-		      :output-function #'generate-vote))))
-
-
-
+	    :output-function #'generate-vote))))
  
-;; (add-triple !ex:Mammal !rdf:type !owl:Class)     
-    
-(defun get-suggestions-2 (&key (rows 2))
-  (json:with-decoder-simple-clos-semantics
-      (let ((json:*json-symbols-package* nil))
-	(let ((x (json:decode-json-from-string
-		  (solr-query *solr-suggestions* :param-alist `(("wt" . "json") ("rows" . ,rows))))))
-	  x))))
-
-(defun get-response-2 (&key (rows 2))
-  (with-slots (RESPONSE) (get-suggestions-2 :rows rows) (values RESPONSE)))
-
-(defun get-docs-2 (&key (rows 2))
-  (with-slots (DOCS) (get-response-2 :rows rows) (values DOCS)))
-

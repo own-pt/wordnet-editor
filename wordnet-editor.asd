@@ -20,4 +20,5 @@
 	       (:file "suggestions"   :depends-on ("backend"))
 	       (:file "wordsenses"    :depends-on ("backend"))
 	       (:file "words"         :depends-on ("backend"))
-	       (:file "nomlex-rdf"    :depends-on ("backend"))))
+	       (:file "nomlex-rdf"    :depends-on ("backend"))
+	       (:file "solr-to-ag"    :depends-on ("backend"))))
