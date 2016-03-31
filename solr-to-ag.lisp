@@ -1,7 +1,6 @@
 
 (in-package :solr-to-ag)
 
-
 (defvar *suggestions* (make-instance 'solr:solr :uri "http://localhost:8983/solr/suggestions"))
 (defvar *votes*       (make-instance 'solr:solr :uri "http://localhost:8983/solr/votes"))
 
@@ -57,7 +56,10 @@
     (at suggestion !prov:wasAttributedTo (or (get-value :user doc) "unknown"))))
 
 
-;; to run open the triple store and execute both commands
+;; to run open the triple store and execute both commands. Execute
+;; get-solr-docs default :rows (10) to get the number of documents in
+;; the index, than execute the commands with the right :rows
+;; parameter.
 
 ;; (open-triple-store ...)
 ;; (mapcar #'add-suggestion (get-solr-docs "type:suggestion" *suggestions* :rows 126000))
