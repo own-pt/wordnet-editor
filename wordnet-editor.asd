@@ -7,14 +7,14 @@
 
 (asdf:defsystem #:wordnet-editor
   :serial t
-  :depends-on (:agclient :cl-ppcre :fare-csv :solr :alexandria :chillax :yason)
+  :depends-on (:agclient :cl-ppcre :fare-csv :solr :alexandria :chillax :yason :split-sequence)
   :components ((:file "packages")
 	       (:file "ag-init"       :depends-on ("packages"))
 	       (:file "utils"         :depends-on ("packages"))
 	       (:file "omw"           :depends-on ("utils"))
 	       (:file "backend"       :depends-on ("utils"))
 	       (:file "solr"          :depends-on ("utils"))
-	       (:file "export"          :depends-on ("utils"))
+	       (:file "export"        :depends-on ("utils"))
 	       (:file "couchdb"       :depends-on ("solr"))
 	       (:file "deduplication" :depends-on ("utils"))
 	       (:file "suggestions"   :depends-on ("backend"))

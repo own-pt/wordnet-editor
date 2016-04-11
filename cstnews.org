@@ -1,0 +1,42 @@
+#+Title: CSTNews Statistics
+
+#+name: iaa
+#+BEGIN_SRC lisp :package "cstnews"
+(mapcar #'car (file->list "data/cstnews-verb-suggestions.txt"))
+#+END_SRC
+
+#+BEGIN_SRC lisp :var dados=iaa :results output
+(rcl:r% "print" (rcl:r% "table" dados))
+#+END_SRC
+
+#+BEGIN_SRC lisp :var dados=iaa :results value
+  (let ((tb (make-hash-table))
+        (total (length dados)))
+    (mapcar (lambda (n) (incf (gethash n tb 0))) dados)
+    (loop for v being the hash-values in tb using (hash-key k)
+          collect (list k v (format nil "~5$" (/ v total)))))
+#+END_SRC
+
+#+RESULTS:
+| -1 | 2829 | 0.52800 |
+|  0 | 1515 | 0.28275 |
+|  2 |  277 | 0.05170 |
+|  4 |   52 | 0.00971 |
+|  1 |  436 | 0.08137 |
+|  3 |  119 | 0.02221 |
+|  5 |   24 | 0.00448 |
+| 15 |    4 | 0.00075 |
+|  6 |   16 | 0.00299 |
+| 12 |    9 | 0.00168 |
+|  9 |   14 | 0.00261 |
+|  7 |    7 | 0.00131 |
+| 10 |    4 | 0.00075 |
+| 14 |   10 | 0.00187 |
+|  8 |    9 | 0.00168 |
+| 21 |    5 | 0.00093 |
+| 13 |    5 | 0.00093 |
+| 20 |    3 | 0.00056 |
+| 11 |   19 | 0.00355 |
+| 19 |    1 | 0.00019 |
+
+
