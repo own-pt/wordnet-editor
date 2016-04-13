@@ -24,7 +24,7 @@
 	     (cons (or (position (aref sa 0) (aref sa 4) :test #'equal :key #'car) -1)
 		   ss)))
     (with-open-file (stream filename)
-      (when stream 
+      (when stream
 	(mapcar (lambda (ss) (stats (translate ss)))
 		(loop for i = (read stream nil) while i append i))))))
 
