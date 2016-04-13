@@ -25,8 +25,6 @@
 		   ss)))
     (with-open-file (stream filename)
       (when stream
-	(sort 
-	 (mapcar (lambda (ss) (stats (translate ss)))
-		 (loop for i = (read stream nil) while i append i))
-	 #'(lambda (x y) (< (car x) (car y))))))))
+	(mapcar (lambda (ss) (stats (translate ss)))
+		(loop for i = (read stream nil) while i append i))))))
 
