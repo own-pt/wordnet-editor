@@ -38,3 +38,15 @@
 | 20 |    2 | 0.00038 |
 
 
+Considerando rodada já com dados da TS
+
+#+name: dados2
+#+BEGIN_SRC lisp  :results value :package :cstnews :cache yes
+  (with-open-file (out "cstnews.csv" :direction :output :if-exists :supersede)
+    (mapcar (lambda (n) (format out "~a,~a~%" (car n) (length (cadr n))))
+            analise))
+#+END_SRC
+
+
+
+
