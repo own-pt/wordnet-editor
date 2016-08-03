@@ -14,3 +14,16 @@ You need mlisp to run:
 (close-triple-store)
 
 output will be placed at own-pt.xml
+
+To verify it, use https://github.com/jmccrae/gwn-scala-api
+
+and:
+
+./gwn -v -i own-pt.xml -f WNLMF
+
+Output should be something like:
+
+Validation successful
+|       | Lang | Words     | Synsets   |
+|:------|:----:|:---------:|:---------:|
+| ownpt |  pt  |     55143 |    117659 |
