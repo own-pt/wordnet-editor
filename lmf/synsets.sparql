@@ -1,6 +1,9 @@
-select ?id ?t
+select ?id ?t ?lex
 {
   ?s a ?t ;
      wn30:synsetId ?id ;
      skos:inScheme <http://logics.emap.fgv.br/wn/> .
+  
+  ?en owl:sameAs ?s ;
+      wn30:lexicographerFile ?lex
 }

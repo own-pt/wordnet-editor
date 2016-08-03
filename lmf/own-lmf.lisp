@@ -96,9 +96,10 @@
   (setf *synsets* nil)
   (dolist (tr (run-query-as-list "synsets.sparql"))
     (let* ((synset-id (first tr))
-           (type (second tr))
-           (id (make-synset-id (part->terse synset-id) (convert-to-POS type))))
-      (push id *synsets*))))
+           (type (convert-to-POS (second tr)))
+           (lexfile (third tr))
+           (id (make-synset-id (part->terse synset-id) type)))
+      (push (list id type (part->terse lexfile)) *synsets*))))
 
 (defun fill-glosses ()
   (setf *glosses* (make-hash-table :test #'equal))
@@ -247,8 +248,8 @@
 
 (defun output-lmf ()
   (with-open-file (stream "own-pt.xml" :direction :output :if-exists :supersede)
-    (with-xml-output (stream)
-      (with-tag ("LexicalResource")
+    (with-xml-output (stream :encoding "UTF-8")
+      (with-tag ("LexicalResource" '(("xmlns:dc" "http://purl.org/dc/elements/1.1/")))
         (with-tag ("Lexicon"
                    '(("id" "ownpt")
                      ("label" "OpenWordnet-PT")
@@ -274,15 +275,20 @@
                    *senses*)
           
           (dolist (s *synsets*)
-            (with-tag ("Synset" `(("id" ,s)
-                                  ("ili" ,(gethash s *ili-map*))))
-              (let ((glosses (gethash s *glosses*))
-                    (examples (gethash s *examples*))
-                    (relations (gethash s *synset-relations*)))
-                (when glosses
-                  (with-tag ("Definition")
-                    (xml-out (combine-gloss-and-examples glosses examples))))
-                (when relations
-                  (dolist (r relations)
-                    (with-tag ("SynsetRelation" `(("target" ,(cdr r))
-                                                  ("relType" ,(car r)))))))))))))))
+            (let ((synset-id (first s))
+                  (type (second s))
+                  (lex-file (third s)))
+             (with-tag ("Synset" `(("id" ,synset-id)
+                                   ("ili" ,(gethash synset-id *ili-map*))
+                                   ("partOfSpeech" ,type)
+                                   ("dc:subject" ,lex-file)))
+               (let ((glosses (gethash s *glosses*))
+                     (examples (gethash s *examples*))
+                     (relations (gethash s *synset-relations*)))
+                 (when glosses
+                   (with-tag ("Definition")
+                     (xml-out (combine-gloss-and-examples glosses examples))))
+                 (when relations
+                   (dolist (r relations)
+                     (with-tag ("SynsetRelation" `(("target" ,(cdr r))
+                                                   ("relType" ,(car r))))))))))))))))
