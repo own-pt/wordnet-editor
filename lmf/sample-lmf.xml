@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE LexicalResource SYSTEM "http://globalwordnet.github.io/schemas/WN-LMF-1.0.dtd">
+<LexicalResource xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <Lexicon id="ownpt" 
+           label="OpenWordnet-PT" 
+           language="pt"
+           email="arademaker@gmail.com"
+           license="http://creativecommons.org/licenses/by/4.0/"
+           version="d65c922"
+           url="http://openwordnet-pt.org/">
+    <LexicalEntry id="wn30-malefactor-n">
+      <Lemma writtenForm="malefactor" partOfSpeech="n"/>
+      <Sense id="wn30-09977660-n-5"
+             synset="wn30-09977660-n">
+      </Sense>
+    </LexicalEntry>
+    <LexicalEntry id="wn30-panelist-n">
+      <Lemma writtenForm="panelist" partOfSpeech="n"/>
+      <Sense id="wn30-10396106-n-1"
+             synset="wn30-10396106-n">
+        <SenseRelation target="wn30-08414608-n-1" relType="derivation"/>
+        <SenseRelation target="wn30-08414807-n-2" relType="derivation"/>
+        <SenseRelation target="wn30-08414381-n-1" relType="derivation"/>
+      </Sense>
+    </LexicalEntry>
+    <Synset id="wn30-00001740-v"
+            ili="i21778">
+            <Definition>draw air into, and expel out of, the lungs; &quot;I can breathe better when the air is clean&quot;; &quot;The patient is respiring&quot;</Definition>
+      <SynsetRelation target="wn30-00005041-v"
+                      relType="entail"/>
+    </Synset>
+    <Synset id="wn30-00002325-v"
+            ili="i21779">
+            <Definition>undergo the biomedical and metabolic processes of respiration by taking up oxygen and producing carbon monoxide</Definition>
+      <SynsetRelation target="wn30-02108377-v"
+                      relType="hypernym"/>
+    </Synset>
+    </Lexicon>
+</LexicalResource>

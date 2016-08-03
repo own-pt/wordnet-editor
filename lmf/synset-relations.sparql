@@ -1,0 +1,16 @@
+select ?pt1synsetid ?t1 ?p ?pt2synsetid ?t2
+{
+  ?pt1synset a ?t1 ;
+             wn30:synsetId ?pt1synsetid ;
+             skos:inScheme <http://logics.emap.fgv.br/wn/> .
+
+  ?en1synset owl:sameAs ?pt1synset ;
+             ?p ?en2synset .
+  
+  ?p a owl:ObjectProperty .
+  
+  ?en2synset owl:sameAs ?pt2synset .
+
+  ?pt2synset a ?t2 ;
+             wn30:synsetId ?pt2synsetid .
+}

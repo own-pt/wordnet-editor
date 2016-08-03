@@ -1,0 +1,10 @@
+select ?id ?t ?lf ?ws
+{
+  ?w a wn30:Word .
+  ?w wn30:lexicalForm ?lf .
+  ?ws wn30:word ?w .
+  ?s wn30:containsWordSense ?ws ;
+     a ?t ;
+     wn30:synsetId ?id ;
+     skos:inScheme <http://logics.emap.fgv.br/wn/> .
+}

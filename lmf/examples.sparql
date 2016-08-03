@@ -1,0 +1,8 @@
+select ?example ?id ?type
+{
+  ?synset a ?type ;
+          wn30:example ?example ;
+          wn30:synsetId ?id .
+  ?type rdfs:subClassOf wn30:Synset .
+  ?synset skos:inScheme <http://logics.emap.fgv.br/wn/> .
+}

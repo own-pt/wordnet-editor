@@ -1,0 +1,8 @@
+select ?gloss ?id ?type
+{
+  ?synset a ?type ;
+          wn30:gloss ?gloss ;
+          wn30:synsetId ?id .
+  ?type rdfs:subClassOf wn30:Synset .
+  ?synset skos:inScheme <http://logics.emap.fgv.br/wn/> .
+}

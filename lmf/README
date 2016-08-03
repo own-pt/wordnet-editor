@@ -1,0 +1,17 @@
+Convert RDF from OWN-PT to LMF, using the mapping from PWN 3.0 synset
+ids to ILI obtained from:
+
+https://github.com/globalwordnet/ili/blob/master/ili-map.ttl
+
+You need mlisp to run:
+
+(load "/usr/local/agraph-client/agraph")
+(load "own-lmf.lisp")
+(in-package :own-lmf)
+(open-triple-store "wn30")
+(fill-data)
+(output-lmf)
+(close-triple-store)
+
+output will be placed at own-pt.xml
+

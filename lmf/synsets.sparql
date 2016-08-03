@@ -1,0 +1,6 @@
+select ?id ?t
+{
+  ?s a ?t ;
+     wn30:synsetId ?id ;
+     skos:inScheme <http://logics.emap.fgv.br/wn/> .
+}
