@@ -5,7 +5,7 @@ https://github.com/globalwordnet/ili/blob/master/ili-map.ttl
 
 You need mlisp to run:
 
-(load "/usr/local/agraph-client/agraph")
+(load "/usr/local/agraph-client/agraph") ;; replace with the path of your local agraph client installation
 (load "own-lmf.lisp")
 (in-package :own-lmf)
 (open-triple-store "wn30")
@@ -14,4 +14,3 @@ You need mlisp to run:
 (close-triple-store)
 
 output will be placed at own-pt.xml
-
