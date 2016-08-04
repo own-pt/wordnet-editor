@@ -22,4 +22,5 @@
 	       (:file "words"         :depends-on ("backend"))
 	       (:file "nomlex-rdf"    :depends-on ("backend"))
 	       (:file "solr-to-ag"    :depends-on ("backend"))
+	       (:file "neo4j"         :depends-on ("backend"))
 	       (:file "cstnews"       :depends-on ("backend"))))

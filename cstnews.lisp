@@ -33,7 +33,6 @@
 			 (mapcar #'car (aref sa 4)))
 		   ss)))
     (with-open-file (stream filename)
-      (when stream
-	(mapcar (lambda (ss) (stats (translate ss)))
-		(loop for i = (read stream nil) while i append i))))))
+      (mapcar (lambda (ss) (stats (translate ss)))
+	      (loop for i = (read stream nil) while i append i)))))
 

@@ -2,8 +2,7 @@
 ;; Author: Alexandre Rademaker
 
 (defpackage #:wordnet
-  (:use #:cl :excl
-	:db.agraph :prolog :db.agraph.sparql :net.uri)
+  (:use #:cl :excl :db.agraph :prolog :db.agraph.sparql :net.uri)
   (:export
    #:file-string
    #:clean-up-word
@@ -12,6 +11,9 @@
 
 (defpackage #:solr-to-ag
   (:use #:cl :excl :db.agraph :net.uri))
+
+(defpackage #:neo4j
+  (:use #:cl :excl :wordnet :db.agraph.sparql :db.agraph))
 
 (defpackage #:cstnews
   (:use #:cl :split-sequence :wordnet :db.agraph :db.agraph.sparql))
