@@ -63,9 +63,13 @@
 	      (submit bloco)
 	      (setf bloco nil)))))))
 
+;; given a initial set of nodes the ideia is to transverse the graph
+;; collecting node-descriptions and relations. relations should be add
+;; in the end only. block size helps to make regular commits.
+(defun graph-transverse (current-block relations block-size pending)
+  "...")
 
-;; error encoding
-
+;; pending error encoding: 
 ;; (let ((synsets (list !wn30pt:synset-11502497-n))
 ;;       (drakma:*header-stream* *standard-output*))
 ;;   (submit-neo synsets))
