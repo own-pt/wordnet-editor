@@ -82,3 +82,12 @@
 
 ;; CREATE INDEX bastante limitado!
 
+;; initial value for pending (above):
+;; select distinct ?r
+;; {
+;;   VALUES ?type { wn30:Synset
+;;                  wn30:AdverbSynset wn30:AdjectiveSatelliteSynset wn30:AdjectiveSynset 
+;;                  wn30:NounSynset wn30:VerbSynset 
+;;                  wn30:Word wn30:WordSense } 
+;;   ?r a ?type .
+;; }
