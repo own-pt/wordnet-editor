@@ -63,10 +63,16 @@
 	      (submit bloco)
 	      (setf bloco nil)))))))
 
-;; given a initial set of nodes the ideia is to transverse the graph
-;; collecting node-descriptions and relations. relations should be add
-;; in the end only. block size helps to make regular commits.
-(defun graph-transverse (current-block relations block-size pending)
+;; given a initial set of nodes (pending) the ideia is to transverse
+;; the graph collecting node-descriptions and relations. relations
+;; should be add in the end only, using the same
+;; block-size. block-size helps to make regular commits. At each
+;; interaction, a node is removed from pending and new nodes
+;; (adjacents) may be added in pending. the node removed from pending
+;; must be 'marked' as visited, moved to visited, to avoid loops. the
+;; initial set of nodes can be given as a query to guarante that all
+;; nodes we are interested will be considered.
+(defun graph-transverse (pending visited current-block relations block-size)
   "...")
 
 ;; pending error encoding: 
