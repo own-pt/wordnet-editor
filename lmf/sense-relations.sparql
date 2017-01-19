@@ -17,4 +17,5 @@ select ?lf1 ?id1 ?t1 ?p ?lf2 ?id2 ?t2
       skos:inScheme <http://logics.emap.fgv.br/wn/> .
 
   ?ws1 ?p ?ws2 .
+  values ?p { wn30:antonymOf } .
 }

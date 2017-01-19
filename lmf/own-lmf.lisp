@@ -1,7 +1,5 @@
-;; (load "/usr/local/agraph-client/agraph")
-(ql:quickload :alexandria)
-(ql:quickload :split-sequence)
-(ql:quickload :xml-emitter)
+
+(ql:quickload '(:alexandria :split-sequence :agclient :xml-emitter))
 
 (defpackage #:own-pt-lmf
   (:use #:cl :excl
@@ -207,7 +205,8 @@
     (let* ((synset-id (first tr))
            (type (second tr))
            (pos (convert-to-POS type))
-           (lexical-form (part->terse (third tr)))
+           (lexical-form (substitute #\_ #\Space
+				     (string-trim '(#\Space #\Tab #\Newline) (part->terse (third tr)))))
            (wordsense (fourth tr))
            (lexical-form-id (make-synset-id lexical-form pos))
            (id (part->terse synset-id)))
@@ -246,8 +245,8 @@
 (defun make-sense-id (id pos word)
   (format nil "own-pt-~a-~a-~a" id pos word))
 
-(defun output-lmf ()
-  (with-open-file (stream "own-pt.xml" :direction :output :if-exists :supersede)
+(defun output-lmf (filename)
+  (with-open-file (stream filename :direction :output :if-exists :supersede)
     (with-xml-output (stream :encoding "UTF-8")
       (with-tag ("LexicalResource" '(("xmlns:dc" "http://purl.org/dc/elements/1.1/")))
         (with-tag ("Lexicon"
@@ -261,34 +260,37 @@
 
           (maphash (lambda (k vs)
                      (with-tag ("LexicalEntry" `(("id" ,k)))
-                       (dolist (v vs)
-                         (with-tag ("Lemma" `(("writtenForm" ,(third v))
-                                              ("partOfSpeech" ,(fourth v))))
-                           (let ((sense-id (make-sense-id (first v) (fourth v) (third v))))
-                             (with-tag ("Sense" `(("id" ,sense-id)
-                                                  ("synset" ,(make-synset-id (first v) (fourth v)))))
-                               (let ((sense-relations (gethash sense-id *sense-relations*)))
-                                 (when sense-relations
-                                   (dolist (sr sense-relations)
-                                     (with-simple-tag ("SenseRelation" `(("target" ,(car sr))
-                                                                         ("relType" ,(cdr sr)))))))))))))) 
+                       (let ((start t))
+			 (dolist (v vs)
+			   (when start
+			     (with-tag ("Lemma" `(("writtenForm" ,(third v))
+						  ("partOfSpeech" ,(fourth v)))))
+			     (setf start nil))
+			   (let ((sense-id (make-sense-id (first v) (fourth v) (third v))))
+			     (with-tag ("Sense" `(("id" ,sense-id)
+						  ("synset" ,(make-synset-id (first v) (fourth v)))))
+			       (let ((sense-relations (gethash sense-id *sense-relations*)))
+				 (when sense-relations
+				   (dolist (sr sense-relations)
+				     (with-simple-tag ("SenseRelation" `(("target" ,(car sr))
+									 ("relType" ,(cdr sr)))))))))))))) 
                    *senses*)
           
           (dolist (s *synsets*)
             (let ((synset-id (first s))
                   (type (second s))
                   (lex-file (third s)))
-             (with-tag ("Synset" `(("id" ,synset-id)
-                                   ("ili" ,(gethash synset-id *ili-map*))
-                                   ("partOfSpeech" ,type)
-                                   ("dc:subject" ,lex-file)))
-               (let ((glosses (gethash s *glosses*))
-                     (examples (gethash s *examples*))
-                     (relations (gethash s *synset-relations*)))
-                 (when glosses
-                   (with-tag ("Definition")
-                     (xml-out (combine-gloss-and-examples glosses examples))))
-                 (when relations
-                   (dolist (r relations)
-                     (with-tag ("SynsetRelation" `(("target" ,(cdr r))
-                                                   ("relType" ,(car r))))))))))))))))
+	      (with-tag ("Synset" `(("id" ,synset-id)
+				    ("ili" ,(gethash synset-id *ili-map*))
+				    ("partOfSpeech" ,type)
+				    ("dc:subject" ,lex-file)))
+		(let ((glosses (gethash s *glosses*))
+		      (examples (gethash s *examples*))
+		      (relations (gethash s *synset-relations*)))
+		  (when glosses
+		    (with-tag ("Definition")
+		      (xml-out (combine-gloss-and-examples glosses examples))))
+		  (when relations
+		    (dolist (r relations)
+		      (with-tag ("SynsetRelation" `(("target" ,(cdr r))
+						    ("relType" ,(car r))))))))))))))))

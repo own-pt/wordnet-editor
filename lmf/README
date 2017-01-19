@@ -3,11 +3,21 @@ ids to ILI obtained from:
 
 https://github.com/globalwordnet/ili/blob/master/ili-map.ttl
 
+What we need:
+
+- mlisp (Franz Common Lisp)
+
+- Allegro Graph (Franz Triple Store)
+
+- Lisp packages: all lisp packages that we use are available in
+  quicklisp except `agclient`. You need to clone the repo
+  https://github.com/own-pt/agclient in your
+  `quicklisp/local-projects/`.
+
 You need mlisp to run:
 
-(load "/usr/local/agraph-client/agraph") ;; replace with the path of your local agraph client installation
 (load "own-lmf.lisp")
-(in-package :own-lmf)
+(in-package :own-pt-lmf)
 (open-triple-store "wn30")
 (fill-data)
 (output-lmf)
