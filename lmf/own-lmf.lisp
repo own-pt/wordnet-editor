@@ -138,25 +138,36 @@
 
 ;; this list was made by matching the conversion of PWN30 pointers in
 ;; https://github.com/own-pt/wordnet2rdf/blob/master/common.lisp
-;; to the conversion of PWN30 pointers in https://github.com/jmccrae/gwn-scala-api/blob/master/src/main/scala/org/globalwordnet/wnapi/wndb.scala
+
+;; to the conversion of PWN30 pointers in
+;; https://github.com/jmccrae/gwn-scala-api/blob/master/src/main/scala/org/globalwordnet/wnapi/wndb.scala
 
 (defparameter *conversion-table* `((!wn30:hypernymOf "hypernym")
                                    (!wn30:hyponymOf "hyponym")
                                    (!wn30:instanceOf "instance_hypernym") 
                                    (!wn30:hasInstance "instance_hyponym")
-                                   (!wn30:memberMeronymOf "mero_member") ;; MemberMeronym/member_meronym in the Scala, but mero_member in the DTD
-                                   (!wn30:memberHolonymOf "holo_member") ;; MemberHolonym/member_holonym in the Scala, but holo_member in the DTD
+                                   (!wn30:memberMeronymOf "mero_member")
+				   ;; MemberMeronym/member_meronym in the Scala, but mero_member in the DTD
+                                   (!wn30:memberHolonymOf "holo_member")
+				   ;; MemberHolonym/member_holonym in the Scala, but holo_member in the DTD
                                    (!wn30:similarTo "similar")
-                                   (!wn30:entails "entails") ;; Entailment/entail in the Scala, but entails in the DTD
-                                   (!wn30:substanceMeronymOf "mero_substance") ;; SubstanceMeronym/substance_meronym in the Scala, mero_substance in the DTD
-                                   (!wn30:substanceHolonymOf "holo_substance") ;; SubstanceHolonym/substance_holonym in the Scala, holo_substance in the DTD
+                                   (!wn30:entails "entails")
+				   ;; Entailment/entail in the Scala, but entails in the DTD
+                                   (!wn30:substanceMeronymOf "mero_substance")
+				   ;; SubstanceMeronym/substance_meronym in the Scala, mero_substance in the DTD
+                                   (!wn30:substanceHolonymOf "holo_substance")
+				   ;; SubstanceHolonym/substance_holonym in the Scala, holo_substance in the DTD
                                    (!wn30:partMeronymOf "mero_part") ;; PartMeronym/part_meronym vs mero_part in DTD
                                    (!wn30:partHolonymOf "holo_part") ;; PartHolonym/part_holony vs holo_part in DTD
-                                   (!wn30:classifiedByTopic "domain_topic") ;; DomainOfSynsetTopic/domain_category vs domain_topic in DTD
+                                   (!wn30:classifiedByTopic "domain_topic")
+				   ;; DomainOfSynsetTopic/domain_category vs domain_topic in DTD
                                    (!wn30:classifiedByRegion "domain_region")
-                                   (!wn30:classifiedByUsage "exemplifies") ;; DomainOfSynsetUsage/domain_usage, but no similar string in DTD
-                                   (!wn30:classifiesByTopic "has_domain_topic") ;; MemberOfThisDomainTopic/domain_member_category, has_domain_topic in DTD
-                                   (!wn30:classifiesByRegion "has_domain_region") ;; MemberOfThisDomainRegion/domain_member_region, has_domain_region in DTD
+                                   (!wn30:classifiedByUsage "exemplifies")
+				   ;; DomainOfSynsetUsage/domain_usage, but no similar string in DTD
+                                   (!wn30:classifiesByTopic "has_domain_topic")
+				   ;; MemberOfThisDomainTopic/domain_member_category, has_domain_topic in DTD
+                                   (!wn30:classifiesByRegion "has_domain_region")
+				   ;; MemberOfThisDomainRegion/domain_member_region, has_domain_region in DTD
                                    (!wn30:classifiesByUsage "is_exemplified_by")
                                    (!wn30:derivationallyRelated "derivation")
                                    (!wn30:causes "causes") ;; Cause/cause vs causes in DTD
@@ -205,10 +216,9 @@
     (let* ((synset-id (first tr))
            (type (second tr))
            (pos (convert-to-POS type))
-           (lexical-form (substitute #\_ #\Space
-				     (string-trim '(#\Space #\Tab #\Newline) (part->terse (third tr)))))
+           (lexical-form (string-trim '(#\Space #\Tab #\Newline) (part->terse (third tr))))
            (wordsense (fourth tr))
-           (lexical-form-id (make-synset-id lexical-form pos))
+           (lexical-form-id (sxhash lexical-form))
            (id (part->terse synset-id)))
       (push `(,id ,wordsense ,lexical-form ,pos) (gethash lexical-form-id *senses*)))))
 
@@ -243,7 +253,8 @@
   (format nil "own-pt-~a-~a" id pos))
 
 (defun make-sense-id (id pos word)
-  (format nil "own-pt-~a-~a-~a" id pos word))
+  (format nil "own-pt-~a-~a-~a" id pos (sxhash word)))
+
 
 (defun output-lmf (filename)
   (with-open-file (stream filename :direction :output :if-exists :supersede)
@@ -259,7 +270,7 @@
                      ("url" "http://openwordnet-pt.org/">)))
 
           (maphash (lambda (k vs)
-                     (with-tag ("LexicalEntry" `(("id" ,k)))
+                     (with-tag ("LexicalEntry" `(("id" ,(format nil "w~a" k))))
                        (let ((start t))
 			 (dolist (v vs)
 			   (when start
