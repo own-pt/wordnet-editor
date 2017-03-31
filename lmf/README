@@ -3,6 +3,9 @@ ids to ILI obtained from:
 
 https://github.com/globalwordnet/ili/blob/master/ili-map.ttl (938052bc8447940408a3885aa5652b41cae930ac)
 
+The mapping was converted to CSV and the AdjectiveSatelliteSynset with
+suffix -s were converted to -a to comply with our own naming convention.
+
 What we need:
 
 - mlisp (Franz Common Lisp)

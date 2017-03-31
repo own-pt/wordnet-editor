@@ -93,7 +93,7 @@
         ((null line))
       (let* ((cols (split-sequence #\, line))
              (ili (first cols))
-             (pwn30 (format nil "own-pt-~a" (second cols))))
+             (pwn30 (format nil "ownpt-~a" (second cols))))
         (setf (gethash pwn30 *ili-map*) ili)))))
 
 (defun fill-synsets ()
@@ -120,7 +120,7 @@
     (let* ((example (first tr))
            (synset-id (second tr))
            (type (third tr))
-           (id (format nil "own-pt-~a-~a" (part->terse synset-id) (convert-to-POS type))))
+           (id (format nil "ownpt-~a-~a" (part->terse synset-id) (convert-to-POS type))))
       (push (part->terse example) (gethash id *examples*)))))
 
 ;; SynsetRelation relType (agent also attribute be_in_state causes
@@ -256,7 +256,7 @@
   (format nil "~{~a~^ ~}; ~{~a~^; ~}" glosses examples))
 
 (defun make-synset-id (id pos)
-  (format nil "own-pt-~a-~a" id pos))
+  (format nil "ownpt-~a-~a" id pos))
 
 (defun make-sense-id (id pos word)
   (format nil "s~a" (hash-id (concatenate 'string id pos word))))
@@ -270,8 +270,11 @@
                      ("label" "OpenWordnet-PT")
                      ("language" "pt")
                      ("email" "alexrad@br.ibm.com")
-                     ("license" "http://creativecommons.org/licenses/by/4.0/")
+                     ("license" "https://creativecommons.org/licenses/by/4.0/")
                      ("version" "d65c922")
+                     ("citation" "http://arademaker.github.io/bibliography/coling2012.html")
+                     ("confidenceScore" "1")
+                     ("status" "valid")
                      ("url" "http://openwordnet-pt.org/">)))
 
           (maphash (lambda (k vs)
