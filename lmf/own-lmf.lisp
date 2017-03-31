@@ -271,7 +271,7 @@
                      ("language" "pt")
                      ("email" "alexrad@br.ibm.com")
                      ("license" "https://creativecommons.org/licenses/by/4.0/")
-                     ("version" "d65c922")
+                     ("version" "1.0")
                      ("citation" "http://arademaker.github.io/bibliography/coling2012.html")
                      ("confidenceScore" "1")
                      ("status" "valid")
