@@ -1,5 +1,5 @@
 
-(ql:quickload '(:alexandria :split-sequence :agclient :xml-emitter))
+(ql:quickload '(:alexandria :split-sequence :agclient :xml-emitter :ironclad :babel))
 
 (defpackage #:own-pt-lmf
   (:use #:cl :excl
@@ -20,6 +20,12 @@
 (register-namespace "prov"   "http://www.w3.org/ns/prov#" :errorp nil)
 (register-namespace "rdfs"   "http://www.w3.org/2000/01/rdf-schema#" :errorp nil)
 (register-namespace "source" "file://" :errorp nil)
+
+(defun hash-id (id)
+  (ironclad:byte-array-to-hex-string 
+   (ironclad:digest-sequence 
+    :sha256
+    (babel:string-to-octets id :encoding :utf-8))))
 
 (defun file-string (path)
   (with-open-file (stream path)
@@ -218,7 +224,7 @@
            (pos (convert-to-POS type))
            (lexical-form (string-trim '(#\Space #\Tab #\Newline) (part->terse (third tr))))
            (wordsense (fourth tr))
-           (lexical-form-id (sxhash lexical-form))
+           (lexical-form-id (hash-id lexical-form))
            (id (part->terse synset-id)))
       (push `(,id ,wordsense ,lexical-form ,pos) (gethash lexical-form-id *senses*)))))
 
@@ -247,14 +253,13 @@
   (fill-sense-relations))
 
 (defun combine-gloss-and-examples (glosses examples)
-  (format nil "~{~a~^ ~};~{~a~^;~}" glosses examples))
+  (format nil "~{~a~^ ~}; ~{~a~^; ~}" glosses examples))
 
 (defun make-synset-id (id pos)
   (format nil "own-pt-~a-~a" id pos))
 
 (defun make-sense-id (id pos word)
-  (format nil "own-pt-~a-~a-~a" id pos (sxhash word)))
-
+  (format nil "s~a" (hash-id (concatenate 'string id pos word))))
 
 (defun output-lmf (filename)
   (with-open-file (stream filename :direction :output :if-exists :supersede)
@@ -295,13 +300,13 @@
 				    ("ili" ,(gethash synset-id *ili-map*))
 				    ("partOfSpeech" ,type)
 				    ("dc:subject" ,lex-file)))
-		(let ((glosses (gethash s *glosses*))
-		      (examples (gethash s *examples*))
-		      (relations (gethash s *synset-relations*)))
+		(let ((glosses (gethash synset-id *glosses*))
+		      (examples (gethash synset-id *examples*))
+		      (relations (gethash synset-id *synset-relations*)))
 		  (when glosses
 		    (with-tag ("Definition")
 		      (xml-out (combine-gloss-and-examples glosses examples))))
 		  (when relations
 		    (dolist (r relations)
-		      (with-tag ("SynsetRelation" `(("target" ,(cdr r))
+		      (with-simple-tag ("SynsetRelation" `(("target" ,(cdr r))
 						    ("relType" ,(car r))))))))))))))))
