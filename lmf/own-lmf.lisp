@@ -223,8 +223,9 @@
            (type (second tr))
            (pos (convert-to-POS type))
            (lexical-form (string-trim '(#\Space #\Tab #\Newline) (part->terse (third tr))))
+           (lexical-form-key (format nil "~a#~a" pos (string-trim '(#\Space #\Tab #\Newline) (part->terse (third tr)))))
            (wordsense (fourth tr))
-           (lexical-form-id (hash-id lexical-form))
+           (lexical-form-id (hash-id lexical-form-key))
            (id (part->terse synset-id)))
       (push `(,id ,wordsense ,lexical-form ,pos) (gethash lexical-form-id *senses*)))))
 
