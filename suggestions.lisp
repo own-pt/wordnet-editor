@@ -2,11 +2,26 @@
 
 (defvar *suggestions-core* (make-instance 'solr:solr :uri "http://localhost:8983/solr/suggestions"))
 
-(defun search-suggestions ()
+(defun search-suggestions/solr ()
   (solr:solr-result->doc-alist
    (solr:solr-query *suggestions-core*
 		    :query "status:committed" 
 		    :param-alist '((:rows . 1000000)))))
+
+;; we need to follow https://github.com/franzinc/solr/blob/master/solr.lisp#L292
+;; so we can be compatible with the way their package generates alist
+(defun my-intern (x)
+  (intern x :keyword))
+
+;; to use this option, first dump the SOLR core with the following url
+;; http://localhost:8983/solr/suggestions/select?q=*%3A*&fq=status%3Acommitted&rows=1000000&wt=json&indent=false
+(defun search-suggestions/file (file)
+  (setf yason:*parse-object-as* :alist)
+  (setf yason:*parse-object-key-fn* #'my-intern)
+  (cdr (assoc :docs (cdr (assoc :response (with-open-file (s file) (yason:parse s)))))))
+
+(defun search-suggestions ()
+  (search-suggestions/file "/tmp/s.json"))
 
 (defun process-suggestions ()
   (dolist (s (search-suggestions))
